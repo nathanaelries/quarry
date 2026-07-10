@@ -1,7 +1,8 @@
 # Quarry — prototype (Godot 4)
 
-A **playable first level — "The Reclamation"** — that puts the mechanics to work in a
-designed space. Built entirely in code, so there is nothing to wire up: open and press Play.
+You start in a **hub** and step into a shrine gate to play the first shrine,
+**"The Reclamation"**. Shrines are small teaching levels built on a reusable framework
+([../docs/SHRINES.md](../docs/SHRINES.md)). Built entirely in code — open and press Play.
 
 ## Run
 
@@ -26,9 +27,13 @@ designed space. Built entirely in code, so there is nothing to wire up: open and
 | **E** | Trip a spirit lock (while in spirit form) |
 | **Esc** | Release mouse · click to re-capture |
 
-## The level — "The Reclamation"
+## The hub & Shrine 01 — "The Reclamation"
 
-A linear escape; the HUD shows your current objective. Full design: [`../docs/LEVEL_1.md`](../docs/LEVEL_1.md).
+You spawn in the **hub**: four pedestals, one open (cyan) and three sealed placeholders. Walk
+into the open gate to enter the shrine. Beat a shrine and it returns you to the hub, that
+pedestal now gold. Framework details: [`../docs/SHRINES.md`](../docs/SHRINES.md).
+
+The shrine is a linear escape; the HUD shows your current objective. Full design: [`../docs/LEVEL_1.md`](../docs/LEVEL_1.md).
 
 1. **Awakening Cell** — the door won't open from here. Press **F** to project your spirit
    through it to the lock beyond, get close, and press **E** — the door slides away.
@@ -48,8 +53,11 @@ at the cell — health is the 5 pips up top.
 | File | Role |
 |---|---|
 | `project.godot` | Minimal config. Main scene = `scenes/main.tscn`. No InputMap (registered in code). |
-| `scenes/main.tscn` | One root node running `world.gd`. |
-| `scripts/world.gd` | Builds lighting, geometry, every demo, player, and HUD; registers input. |
+| `scenes/main.tscn` | One root node running `game.gd`. |
+| `scripts/game.gd` | **Game shell**: swaps between hub and shrines, tracks completion, holds the shrine registry. |
+| `shrines/shrine_base.gd` | Reusable shrine base: player, HUD, input, lighting, navmesh, objectives, win flow, build helpers. |
+| `shrines/hub.gd` | The hub — pedestal chamber to pick a shrine. |
+| `shrines/shrine_reclamation.gd` | Shrine 01 "The Reclamation" — content on the base. |
 | `scripts/player.gd` | First-person controller: re-orientable gravity, spirit projection, weapon, blade, tether, resurrection. |
 | `scripts/portal.gd` | Linked portal pair: walk / look (SubViewport) / shoot through. |
 | `scripts/projectile.gd` | Weapon projectile — damages targets, carries through portals. |

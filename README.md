@@ -48,6 +48,8 @@ See [`docs/MECHANICS.md`](docs/MECHANICS.md) for the full breakdown.
   patrol/chase/attack/search, melee & ranged archetypes, and the gravity asymmetry.
 - **[docs/LEVEL_1.md](docs/LEVEL_1.md)** — "The Reclamation": the first real level — a linear
   escape (cell → corridor → gallery → cistern) with mechanic gates, paced combat, and a win.
+- **[docs/SHRINES.md](docs/SHRINES.md)** — the shrine framework: a reusable base + a hub +
+  a game shell, so each shrine (BOTW-style teaching level) is one small file to add.
 
 A note on the cultural material: Quarry draws on Kabbalah and Merkavah mysticism as the
 *fiction* behind its powers. It is a respectful creative interpretation, **not** a
@@ -58,9 +60,11 @@ consultants. See the "Cultural authenticity" section in `DESIGN.md`.
 
 ## The prototype
 
-[`prototype/`](prototype/) is a **Godot 4** vertical slice — now a real first level,
-**"The Reclamation"**: a linear escape through a harvesting district of the Cylinder. Built
-almost entirely in code, so it opens and runs with nothing to wire up by hand.
+[`prototype/`](prototype/) is a **Godot 4** vertical slice. You start in a **hub** and step
+into a shrine gate to play the first shrine, **"The Reclamation"** — a linear escape through
+a harvesting district of the Cylinder. Shrines are small, self-contained teaching levels; the
+[shrine framework](docs/SHRINES.md) makes each one a single file to add. Built almost entirely
+in code, so it opens and runs with nothing to wire up by hand.
 
 The critical path — cell → corridor → gallery → cistern — introduces the mechanics one at a
 time and combines them, gated so it's always completable ([docs/LEVEL_1.md](docs/LEVEL_1.md)):
