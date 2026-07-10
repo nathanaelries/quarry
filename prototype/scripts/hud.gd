@@ -10,6 +10,8 @@ var _meter_bg: ColorRect
 var _meter_fill: ColorRect
 var _death_bg: ColorRect
 var _death_text: Label
+var _inv: Label
+var _toast_y := 560.0
 
 
 func _ready() -> void:
@@ -23,6 +25,8 @@ func _ready() -> void:
 		"F spirit projection · E trip lock · Esc mouse",
 		"",
 		"Around the arena:",
+		"· ahead — drone range + crates: shoot for salvage,",
+		"          spirit-blade for essence (rank = bigger haul)",
 		"· E   orange planetoid — walk around it",
 		"· N   green strip — walk up the wall",
 		"· W   cyan portals — look / step / shoot through",
@@ -52,13 +56,19 @@ func _ready() -> void:
 	_build_crosshair()
 	_build_death_overlay()
 
+	_inv = _make_label()
+	_inv.position = Vector2(16, 402)
+	add_child(_inv)
+
 	if player:
 		player.mode_changed.connect(_on_mode_changed)
 		player.spirit_time_changed.connect(_on_spirit_time)
 		player.died.connect(_on_died)
 		player.resurrected.connect(_on_resurrected)
+		player.picked_up.connect(_on_picked_up)
 	_on_mode_changed(false)
 	_on_spirit_time(0.0)
+	_refresh_inventory()
 
 
 func _build_crosshair() -> void:
@@ -121,3 +131,36 @@ func _on_died() -> void:
 func _on_resurrected() -> void:
 	_death_bg.visible = false
 	_death_text.visible = false
+
+
+func _on_picked_up(text: String, color: Color, rarity: String) -> void:
+	var t := Label.new()
+	t.text = text
+	t.add_theme_color_override("font_color", color)
+	t.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.85))
+	t.add_theme_constant_override("outline_size", 5)
+	var big := rarity == "rare" or rarity == "epic" or rarity == "legendary"
+	t.add_theme_font_size_override("font_size", 23 if big else 18)
+	var cx := get_viewport().get_visible_rect().size.x
+	t.position = Vector2(cx * 0.5 - 70, _toast_y)
+	add_child(t)
+	var tw := create_tween()
+	tw.set_parallel(true)
+	tw.tween_property(t, "position:y", t.position.y - 62, 1.4)
+	tw.tween_property(t, "modulate:a", 0.0, 1.1).set_delay(0.4)
+	tw.chain().tween_callback(t.queue_free)
+	_refresh_inventory()
+
+
+func _refresh_inventory() -> void:
+	if player == null:
+		return
+	var inv: Dictionary = player.inventory
+	if inv.is_empty():
+		_inv.text = "SATCHEL — empty"
+		return
+	var lines := ["SATCHEL"]
+	for id in inv:
+		var nm: String = Loot.item_info(id).get("name", id)
+		lines.append("%s  ×%d" % [nm, inv[id]])
+	_inv.text = "\n".join(lines)

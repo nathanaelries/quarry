@@ -15,6 +15,7 @@ const GravitySwitchScript := preload("res://scripts/gravity_switch.gd")
 const SpiritLockScript := preload("res://scripts/spirit_lock.gd")
 const SpiritRevealScript := preload("res://scripts/spirit_reveal.gd")
 const DroneScript := preload("res://scripts/drone.gd")
+const LootContainerScript := preload("res://scripts/loot_container.gd")
 const HudScript := preload("res://scripts/hud.gd")
 
 const CYAN := Color(0.35, 0.85, 1.0)
@@ -40,6 +41,7 @@ func _ready() -> void:
 	_build_portal_demo(player)
 	_build_spirit_demo(player)
 	_build_spirit_reveal_demo(player)
+	_build_loot_demo(player)
 
 	var hud: CanvasLayer = HudScript.new()
 	hud.player = player
@@ -183,13 +185,37 @@ func _build_portal_demo(player: CharacterBody3D) -> void:
 	_spawn_drone(Vector3(-13, 8.6, -7), "physical")
 
 
-## Spawn a drone target. `vuln` = "physical" | "spirit" | "both".
-func _spawn_drone(pos: Vector3, vuln: String) -> Node3D:
+## Spawn a drone target. `vuln` = "physical" | "spirit" | "both"; rank scales its loot.
+func _spawn_drone(pos: Vector3, vuln: String, rank := "junior") -> Node3D:
 	var drone: Node3D = DroneScript.new()
 	drone.vulnerable_to = vuln
+	drone.rank = rank
 	add_child(drone)
 	drone.global_position = pos
 	return drone
+
+
+func _spawn_container(pos: Vector3, pool: String, rank: String, spirit: bool) -> Node3D:
+	var c: Node3D = LootContainerScript.new()
+	c.pool = pool
+	c.rank = rank
+	c.spirit_breakable = spirit
+	add_child(c)
+	c.global_position = pos
+	return c
+
+
+# Loot demo — a firing range + breakable containers.
+# Shoot a drone for salvage, spirit-blade it for essence; higher rank = richer haul.
+func _build_loot_demo(player: CharacterBody3D) -> void:
+	_add_box(Vector3(0, 0.4, 3), Vector3(9, 0.8, 2), Color(0.15, 0.15, 0.2))     # firing-range plinth
+	_spawn_drone(Vector3(-3, 1.6, 3), "both", "junior")
+	_spawn_drone(Vector3(0, 1.6, 3), "both", "middle")
+	_spawn_drone(Vector3(3, 1.6, 3), "both", "senior")
+
+	_spawn_container(Vector3(6, 0.5, 6), "salvage_crate", "junior", false)       # shoot me
+	_spawn_container(Vector3(-5, 0.5, 9), "salvage_crate", "middle", false)      # shoot me
+	_spawn_container(Vector3(11, 0.6, -7.5), "reliquary", "senior", true)        # spirit-blade me
 
 
 # ---------------------------------------------------------------------------

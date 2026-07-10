@@ -23,6 +23,7 @@ config/icon="res://icon.svg"
 [autoload]
 
 Juice="*res://scripts/juice.gd"
+Loot="*res://scripts/loot.gd"
 
 [display]
 

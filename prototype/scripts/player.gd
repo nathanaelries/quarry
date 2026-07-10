@@ -56,6 +56,9 @@ signal mode_changed(is_spirit: bool)
 signal spirit_time_changed(fraction: float)
 signal died()
 signal resurrected()
+signal picked_up(text: String, color: Color, rarity: String)
+
+var inventory := {}                 # item id -> count
 
 
 func _ready() -> void:
@@ -425,3 +428,13 @@ func _resurrect() -> void:
 	up_direction = current_up
 	is_dead = false
 	resurrected.emit()
+
+
+# ---------------------------------------------------------------------------
+# Loot
+# ---------------------------------------------------------------------------
+func collect(item: String, count: int, color: Color, display_name: String, rarity: String) -> void:
+	inventory[item] = inventory.get(item, 0) + count
+	picked_up.emit("+%d  %s" % [count, display_name], color, rarity)
+	var rare := rarity == "rare" or rarity == "epic" or rarity == "legendary"
+	Juice.play_3d("pickup_rare" if rare else "pickup", global_position, -5.0)

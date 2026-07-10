@@ -66,7 +66,33 @@ Everything in the mechanic triad is now live in one arena:
 | `scripts/drone.gd` | Dummy target — vulnerable to gun, blade, or both. |
 | `scripts/spirit_lock.gd` | Spirit-only lock that opens a door. |
 | `scripts/spirit_reveal.gd` | Bridge the spirit reveals for the body to cross. |
-| `scripts/hud.gd` | Controls, zone guide, mode readout, spirit timer, death overlay. |
+| `scripts/juice.gd` | Autoload `Juice`: procedural SFX, screen-shake helpers, impact sparks, spirit audio filter. |
+| `scripts/loot.gd` | Autoload `Loot`: item catalog, weighted drop pools, rank/condition rolls, spawner. |
+| `scripts/pickup.gd` | A floating, rarity-colored loot mote with a pickup magnet. |
+| `scripts/loot_container.gd` | Breakable salvage crate / spirit reliquary. |
+| `scripts/hud.gd` | Controls, zone guide, mode readout, spirit timer, death overlay, satchel + pickup toasts. |
+
+## Loot (BOTW-style)
+
+Kill a drone and it drops loot — but **how** you kill it decides *what*: **shoot** it for
+**salvage** (chitin, sap, cores), **spirit-blade** it for **essence** (rune fragments,
+Sefirah Motes). Drone **rank** (junior/middle/senior) scales the haul. Breakable **crates**
+and **reliquaries** have their own pools. Drops float up as rarity-colored motes, magnet to
+you, and land in the **satchel** (top-left counter) with a toast. Full design +
+tuning-by-data: [`../docs/LOOT.md`](../docs/LOOT.md).
+
+## Feel & audio (juice)
+
+The greybox now has game-feel, so the loop can be judged with the sound on: **screen shake**
+on hits/jumps/gravity-flips/portals, **muzzle flash**, **impact sparks**, and a full set of
+**procedurally-synthesized SFX** (shot, hit, footsteps, jump, portal whoosh, gravity
+whoomph, spirit enter/exit). Entering spirit mode routes the whole mix through a **lowpass +
+reverb** so the world goes ethereal.
+
+> The SFX are **placeholder synth tones generated in code** (no audio files — keeps the repo
+> self-contained). They're for validating feel, not shipping; swap in authored audio later —
+> the trigger points (`Juice.play_3d/play_2d/spark/set_spirit`) stay the same. Audio couldn't
+> be *heard* here (headless), only verified to synthesize and play without error.
 
 ## Known first-pass limits (needs eyes-on-screen)
 
