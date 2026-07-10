@@ -39,9 +39,9 @@ See [`docs/MECHANICS.md`](docs/MECHANICS.md) for the full breakdown.
   progression, and the editorial notes on how this was cleaned up from the source brief.
 - **[docs/STORY.md](docs/STORY.md)** — narrative, characters, factions, world (full spoilers).
 - **[docs/MECHANICS.md](docs/MECHANICS.md)** — the mechanic triad in implementable detail.
-- **[docs/ART_BIBLE.md](docs/ART_BIBLE.md)** — the visual direction (Ōkami × Wind Waker ×
-  biomech × Kabbalah): color system, motifs, silhouettes, two-world render. Vector concept
-  art in [`docs/art/`](docs/art/); a shareable page renders in [`docs/art/art-bible.html`](docs/art/art-bible.html).
+- **[docs/ART_BIBLE.md](docs/ART_BIBLE.md)** — the visual direction: **1960s sci-fi
+  poster / comic** style, an O'Neill Cylinder, and "Living Sacred Technology" (biomech +
+  Kabbalah). Defines the *look* the 3D game renders toward. Reference art in [`docs/art/`](docs/art/).
 - **[docs/LOOT.md](docs/LOOT.md)** — the BOTW-style drop system: weighted pools, rank
   escalation, and the twist where the *mechanic you kill with* transforms the loot.
 - **[docs/DRONES.md](docs/DRONES.md)** — enemy AI: perception (sight cone + line-of-sight),

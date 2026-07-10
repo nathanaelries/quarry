@@ -29,16 +29,18 @@ mystical loot. That choice is the loot system's soul, and it's native to the mec
 
 ## Rarity tiers
 
-Five tiers, colored straight from the [Art Bible](ART_BIBLE.md) palette (so pickups read
-their value at a glance and match the world):
+Five tiers, each a distinct color so pickups read their value at a glance. These are the
+**current prototype (greybox) values** and are due a re-skin to the [Art Bible](ART_BIBLE.md)
+palette (Electric Blue / Fiery Orange / Vibrant Yellow / Crimson / Silver·Gold) when art
+production starts — the tier→color mapping in `scripts/loot.gd` is the single place to change.
 
-| Tier | Color | Palette |
+| Tier | Current greybox color | Hex |
 |---|---|---|
-| Common | Bone Ivory | `#D8C9A6` |
-| Uncommon | Harvest Green | `#7FBF6B` |
-| Rare | Portal Cyan | `#4FD4E0` |
-| Epic | Merkavah Violet | `#B79BFF` |
-| Legendary | Emanation Gold | `#FFE39A` |
+| Common | bone | `#D8C9A6` |
+| Uncommon | green | `#7FBF6B` |
+| Rare | cyan | `#4FD4E0` |
+| Epic | violet | `#B79BFF` |
+| Legendary | gold | `#FFE39A` |
 
 ## Item catalog (prototype)
 
