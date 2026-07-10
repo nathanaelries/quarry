@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="380" viewBox="0 0 900 380" font-family="Georgia, serif">
+  <rect width="900" height="380" fill="#EDE3CC"/>
+  <text x="30" y="40" fill="#12161B" font-size="20" letter-spacing="2">SILHOUETTE STUDIES — read it black first</text>
+  <text x="30" y="60" fill="#6b6350" font-size="12" font-style="italic">sinew vs. star · every hero form contrasts a soft organic mass against crisp sacred geometry</text>
+
+  <!-- 1. The Cylinder -->
+  <g fill="#12161B">
+    <path d="M120,96 C82,132 74,196 74,236 C74,286 96,338 120,356 C144,338 166,286 166,236 C166,196 158,132 120,96 Z"/>
+  </g>
+  <text x="120" y="374" fill="#12161B" font-size="12" text-anchor="middle">The Cylinder</text>
+
+  <!-- 2. Harvested drone (Merkavah core cut out) -->
+  <g fill="#12161B">
+    <circle cx="300" cy="118" r="17"/>
+    <path d="M282,140 C270,150 268,210 276,250 L288,300 L296,300 L294,250 L306,250 L304,300 L312,300 L324,250 C332,210 330,150 318,140 Z"/>
+    <path d="M282,148 L262,210 L270,214 L290,160 Z"/>
+    <path d="M318,148 L338,210 L330,214 L310,160 Z"/>
+  </g>
+  <polygon points="300,178 314,200 300,222 286,200" fill="#EDE3CC"/>
+  <polygon points="300,186 308,200 300,214 292,200" fill="#12161B"/>
+  <text x="300" y="374" fill="#12161B" font-size="12" text-anchor="middle">Harvested drone</text>
+
+  <!-- 3. Sefirah organ-chamber -->
+  <g fill="#12161B">
+    <path d="M460,110 C438,150 430,150 430,210 C430,270 448,320 460,340 C472,320 490,270 490,210 C490,150 482,150 460,110 Z"/>
+    <path d="M414,300 C440,320 480,320 506,300 L506,344 L414,344 Z"/>
+  </g>
+  <circle cx="460" cy="205" r="9" fill="#EDE3CC"/>
+  <text x="460" y="374" fill="#12161B" font-size="12" text-anchor="middle">Sefirah chamber</text>
+
+  <!-- 4. Abby (mechanic + a spark of the sacred) -->
+  <g fill="#12161B">
+    <circle cx="635" cy="120" r="15"/>
+    <path d="M628,108 C612,112 610,132 622,150 L628,150 Z"/>
+    <path d="M620,150 C614,168 614,210 622,250 L618,320 L630,320 L636,252 L642,252 L648,320 L660,320 L654,250 C662,210 662,168 654,150 Z"/>
+    <path d="M622,168 L604,214 L612,218 L628,178 Z"/>
+    <path d="M652,168 L672,210 L664,216 L646,178 Z"/>
+    <rect x="620" y="196" width="36" height="10" rx="2"/>
+  </g>
+  <circle cx="661" cy="212" r="4" fill="#D9A441"/>
+  <text x="637" y="374" fill="#12161B" font-size="12" text-anchor="middle">Abby Koval</text>
+
+  <!-- 5. Portal (ring + Merkavah) -->
+  <g fill="#12161B">
+    <circle cx="810" cy="215" r="78"/>
+  </g>
+  <circle cx="810" cy="215" r="58" fill="#EDE3CC"/>
+  <g fill="none" stroke="#12161B" stroke-width="4">
+    <polygon points="810,172 847,236 773,236"/>
+    <polygon points="810,258 773,194 847,194"/>
+  </g>
+  <text x="810" y="374" fill="#12161B" font-size="12" text-anchor="middle">Portal — folded space</text>
+</svg>

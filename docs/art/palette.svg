@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="780" height="600" viewBox="0 0 780 600" font-family="Georgia, 'Times New Roman', serif">
+  <rect width="780" height="600" fill="#12161B"/>
+  <text x="30" y="46" fill="#FFE39A" font-size="26" letter-spacing="2">QUARRY — COLOR SYSTEM</text>
+  <text x="30" y="70" fill="#8a8f98" font-size="13" font-style="italic">warm = life &amp; the sacred · cool = fold-space &amp; the ascent · gold is earned</text>
+
+  <!-- Neutrals -->
+  <text x="30" y="112" fill="#D8C9A6" font-size="14" letter-spacing="1">NEUTRALS / GROUND</text>
+  <g transform="translate(30,124)">
+    <rect width="160" height="52" rx="6" fill="#12161B" stroke="#33414D"/><text x="8" y="72" fill="#EDE3CC" font-size="13">Ink Black</text><text x="8" y="90" fill="#7f8894" font-size="11">#12161B</text>
+    <g transform="translate(180,0)"><rect width="160" height="52" rx="6" fill="#33414D"/><text x="8" y="72" fill="#EDE3CC" font-size="13">Hull Slate</text><text x="8" y="90" fill="#7f8894" font-size="11">#33414D</text></g>
+    <g transform="translate(360,0)"><rect width="160" height="52" rx="6" fill="#D8C9A6"/><text x="8" y="72" fill="#EDE3CC" font-size="13">Bone Ivory</text><text x="8" y="90" fill="#7f8894" font-size="11">#D8C9A6</text></g>
+    <g transform="translate(540,0)"><rect width="160" height="52" rx="6" fill="#EDE3CC"/><text x="8" y="72" fill="#EDE3CC" font-size="13">Washi Paper</text><text x="8" y="90" fill="#7f8894" font-size="11">#EDE3CC</text></g>
+  </g>
+
+  <!-- Life -->
+  <text x="30" y="228" fill="#F2A93C" font-size="14" letter-spacing="1">LIFE &amp; WARMTH — the harvested sap (gravity)</text>
+  <g transform="translate(30,240)">
+    <rect width="160" height="52" rx="6" fill="#F2A93C"/><text x="8" y="72" fill="#EDE3CC" font-size="13">Amber Sap</text><text x="8" y="90" fill="#7f8894" font-size="11">#F2A93C · was orange</text>
+    <g transform="translate(180,0)"><rect width="160" height="52" rx="6" fill="#D98A2B"/><text x="8" y="72" fill="#EDE3CC" font-size="13">Ember Gold</text><text x="8" y="90" fill="#7f8894" font-size="11">#D98A2B</text></g>
+  </g>
+
+  <!-- Sacred / Spirit -->
+  <text x="30" y="344" fill="#FFE39A" font-size="14" letter-spacing="1">SACRED / SPIRIT / MERKAVAH — the ascent</text>
+  <g transform="translate(30,356)">
+    <rect width="160" height="52" rx="6" fill="#FFE39A"/><text x="8" y="72" fill="#EDE3CC" font-size="13">Emanation Gold</text><text x="8" y="90" fill="#7f8894" font-size="11">#FFE39A</text>
+    <g transform="translate(180,0)"><rect width="160" height="52" rx="6" fill="#B79BFF"/><text x="8" y="72" fill="#EDE3CC" font-size="13">Merkavah Violet</text><text x="8" y="90" fill="#7f8894" font-size="11">#B79BFF · was purple</text></g>
+    <g transform="translate(360,0)"><rect width="160" height="52" rx="6" fill="#8FB6FF"/><text x="8" y="72" fill="#EDE3CC" font-size="13">Ascent Blue</text><text x="8" y="90" fill="#7f8894" font-size="11">#8FB6FF</text></g>
+  </g>
+
+  <!-- Fold / Harvest / Metal -->
+  <text x="30" y="460" fill="#4FD4E0" font-size="14" letter-spacing="1">FOLD-SPACE · HARVEST · METAL</text>
+  <g transform="translate(30,472)">
+    <rect width="118" height="52" rx="6" fill="#4FD4E0"/><text x="6" y="72" fill="#EDE3CC" font-size="12">Portal Cyan</text><text x="6" y="90" fill="#7f8894" font-size="10">#4FD4E0</text>
+    <g transform="translate(138,0)"><rect width="118" height="52" rx="6" fill="#1E6E78"/><text x="6" y="72" fill="#EDE3CC" font-size="12">Deep Teal</text><text x="6" y="90" fill="#7f8894" font-size="10">#1E6E78</text></g>
+    <g transform="translate(276,0)"><rect width="118" height="52" rx="6" fill="#7FBF6B"/><text x="6" y="72" fill="#EDE3CC" font-size="12">Harvest Green</text><text x="6" y="90" fill="#7f8894" font-size="10">#7FBF6B</text></g>
+    <g transform="translate(414,0)"><rect width="118" height="52" rx="6" fill="#E0564B"/><text x="6" y="72" fill="#EDE3CC" font-size="12">Drone Crimson</text><text x="6" y="90" fill="#7f8894" font-size="10">#E0564B</text></g>
+    <g transform="translate(552,0)"><rect width="118" height="52" rx="6" fill="#D9A441"/><text x="6" y="72" fill="#EDE3CC" font-size="12">Gold Leaf</text><text x="6" y="90" fill="#7f8894" font-size="10">#D9A441</text></g>
+  </g>
+</svg>

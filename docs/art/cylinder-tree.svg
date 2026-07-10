@@ -1,0 +1,82 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="600" height="820" viewBox="0 0 600 820" font-family="Georgia, serif">
+  <defs>
+    <radialGradient id="void" cx="50%" cy="42%" r="60%">
+      <stop offset="0%" stop-color="#1b2330"/><stop offset="100%" stop-color="#0c0f14"/>
+    </radialGradient>
+    <filter id="g" x="-60%" y="-60%" width="220%" height="220%">
+      <feGaussianBlur stdDeviation="4" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="gsm" x="-60%" y="-60%" width="220%" height="220%">
+      <feGaussianBlur stdDeviation="2" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <linearGradient id="hull" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#26313b"/><stop offset="50%" stop-color="#3a4854"/><stop offset="100%" stop-color="#26313b"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="600" height="820" fill="url(#void)"/>
+  <text x="30" y="42" fill="#FFE39A" font-size="22" letter-spacing="2">THE CYLINDER</text>
+  <text x="30" y="64" fill="#8a8f98" font-size="13" font-style="italic">a living vessel — its power system is the Tree of Life</text>
+
+  <!-- harvest beam below -->
+  <polygon points="255,650 345,650 430,800 170,800" fill="#7FBF6B" opacity="0.12"/>
+  <polygon points="278,650 322,650 360,800 240,800" fill="#7FBF6B" opacity="0.16"/>
+
+  <!-- hull: organic chitin-and-bone seed, sumi-e outline -->
+  <path d="M300,88 C186,150 156,320 156,438 C156,566 214,724 300,782
+           C386,724 444,566 444,438 C444,320 414,150 300,88 Z"
+        fill="url(#hull)" stroke="#12161B" stroke-width="5"/>
+  <!-- chitin plating seams -->
+  <g fill="none" stroke="#D8C9A6" stroke-width="1.4" opacity="0.4">
+    <path d="M176,300 C240,282 360,282 424,300"/>
+    <path d="M164,420 C250,400 350,400 436,420"/>
+    <path d="M186,560 C255,586 345,586 414,560"/>
+    <path d="M300,90 L300,120 M232,190 L268,210 M368,190 L332,210"/>
+  </g>
+
+  <!-- amber sap veins = the 22 paths -->
+  <g filter="url(#g)" stroke="#F2A93C" stroke-width="2.4" opacity="0.9">
+    <line x1="300" y1="120" x2="370" y2="190"/><line x1="300" y1="120" x2="230" y2="190"/><line x1="300" y1="120" x2="300" y2="360"/>
+    <line x1="370" y1="190" x2="230" y2="190"/><line x1="370" y1="190" x2="300" y2="360"/><line x1="370" y1="190" x2="370" y2="290"/>
+    <line x1="230" y1="190" x2="300" y2="360"/><line x1="230" y1="190" x2="230" y2="290"/>
+    <line x1="370" y1="290" x2="230" y2="290"/><line x1="370" y1="290" x2="300" y2="360"/><line x1="370" y1="290" x2="370" y2="470"/>
+    <line x1="230" y1="290" x2="300" y2="360"/><line x1="230" y1="290" x2="230" y2="470"/>
+    <line x1="300" y1="360" x2="370" y2="470"/><line x1="300" y1="360" x2="230" y2="470"/><line x1="300" y1="360" x2="300" y2="545"/>
+    <line x1="370" y1="470" x2="230" y2="470"/><line x1="370" y1="470" x2="300" y2="545"/><line x1="370" y1="470" x2="300" y2="650"/>
+    <line x1="230" y1="470" x2="300" y2="545"/><line x1="230" y1="470" x2="300" y2="650"/>
+    <line x1="300" y1="545" x2="300" y2="650"/>
+  </g>
+
+  <!-- sefirot = glowing organ-nodes -->
+  <g filter="url(#g)" fill="#FFE39A" stroke="#D9A441" stroke-width="1.6">
+    <circle cx="300" cy="120" r="14"/>
+    <circle cx="370" cy="190" r="13"/><circle cx="230" cy="190" r="13"/>
+    <circle cx="370" cy="290" r="13"/><circle cx="230" cy="290" r="13"/>
+    <circle cx="370" cy="470" r="13"/><circle cx="230" cy="470" r="13"/>
+    <circle cx="300" cy="545" r="13"/>
+    <circle cx="300" cy="650" r="16" fill="#7FBF6B" stroke="#5a9a52"/>
+  </g>
+
+  <!-- Tiferet: the Merkavah heart / engine -->
+  <g filter="url(#gsm)" fill="none" stroke="#B79BFF" stroke-width="2.2">
+    <polygon points="300,326 329,377 271,377"/>
+    <polygon points="300,394 271,343 329,343"/>
+  </g>
+
+  <!-- a flaring rune along a vein -->
+  <g filter="url(#gsm)" stroke="#FFE39A" stroke-width="1.6" fill="none" opacity="0.9">
+    <path d="M338,230 l10,0 m-5,-6 l0,16 m-2,-3 l-8,6"/>
+    <path d="M258,510 l0,12 m-6,-8 l12,0 m-9,10 l6,4"/>
+  </g>
+
+  <!-- annotations -->
+  <g stroke="#5a6472" stroke-width="1" fill="#c8cdd6" font-size="12">
+    <line x1="316" y1="120" x2="470" y2="120"/><text x="476" y="124">sefirah — glowing organ-chamber</text>
+    <line x1="330" y1="352" x2="470" y2="352"/><text x="476" y="356" fill="#B79BFF">Merkavah heart (engine)</text>
+    <line x1="360" y1="330" x2="470" y2="300"/><text x="476" y="300" fill="#F2A93C">amber sap vein — harvested life</text>
+    <line x1="316" y1="650" x2="440" y2="690"/><text x="360" y="712" fill="#7FBF6B">Malkuth — the harvesting maw</text>
+  </g>
+  <text x="300" y="806" fill="#7f8894" font-size="12" text-anchor="middle" font-style="italic">sinew + chitin + light · ink-outlined · awe, not gore</text>
+</svg>

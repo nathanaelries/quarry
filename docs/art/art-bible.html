@@ -1,0 +1,412 @@
+<title>Quarry — Art Bible</title>
+<style>
+  :root {
+    /* fixed palette (the canon) */
+    --paper:#EDE3CC; --ink:#12161B; --slate:#33414D; --bone:#D8C9A6;
+    --gold:#D9A441; --gold-light:#FFE39A; --amber:#F2A93C; --ember:#D98A2B;
+    --violet:#B79BFF; --ascent:#8FB6FF; --cyan:#4FD4E0; --teal:#1E6E78;
+    --green:#7FBF6B; --crimson:#E0564B;
+
+    /* semantic tokens — PHYSICAL / light default */
+    --bg:#EDE3CC; --bg-2:#e5d9bd; --fg:#171b18; --muted:#6c6450;
+    --rule:#cdbf9d; --accent:#b1801f; --accent-2:#C06E1E;
+    --card:#f3ecd9; --card-edge:#d6c8a4; --plate-edge:#cbbd98;
+    --serif:"Iowan Old Style","Palatino Linotype",Palatino,"Book Antiqua",Georgia,serif;
+    --sans:ui-sans-serif,system-ui,"Segoe UI",Helvetica,Arial,sans-serif;
+    --mono:ui-monospace,"SFMono-Regular","Cascadia Code",Menlo,Consolas,monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg:#0e1319; --bg-2:#0a0e13; --fg:#e8ddc5; --muted:#9aa2ad;
+      --rule:#26313d; --accent:#FFE39A; --accent-2:#B79BFF;
+      --card:#141b24; --card-edge:#27323e; --plate-edge:#2b3641;
+    }
+  }
+  :root[data-theme="light"] {
+    --bg:#EDE3CC; --bg-2:#e5d9bd; --fg:#171b18; --muted:#6c6450;
+    --rule:#cdbf9d; --accent:#b1801f; --accent-2:#C06E1E;
+    --card:#f3ecd9; --card-edge:#d6c8a4; --plate-edge:#cbbd98;
+  }
+  :root[data-theme="dark"] {
+    --bg:#0e1319; --bg-2:#0a0e13; --fg:#e8ddc5; --muted:#9aa2ad;
+    --rule:#26313d; --accent:#FFE39A; --accent-2:#B79BFF;
+    --card:#141b24; --card-edge:#27323e; --plate-edge:#2b3641;
+  }
+
+  * { box-sizing:border-box; }
+  body {
+    margin:0; background:var(--bg); color:var(--fg);
+    font-family:var(--serif); line-height:1.72; font-size:17px;
+    -webkit-font-smoothing:antialiased;
+    background-image:
+      radial-gradient(140% 80% at 50% -10%, color-mix(in srgb, var(--accent) 6%, transparent), transparent 60%);
+    transition:background-color .5s ease, color .5s ease;
+  }
+  .wrap { max-width:920px; margin:0 auto; padding:clamp(20px,5vw,64px) clamp(20px,5vw,40px) 96px; }
+  p { max-width:66ch; }
+  a { color:var(--accent-2); text-underline-offset:3px; }
+
+  .eyebrow { font-family:var(--sans); text-transform:uppercase; letter-spacing:.28em;
+    font-size:.72rem; font-weight:600; color:var(--accent); }
+  h1 { font-size:clamp(2.3rem,6vw,4rem); line-height:1.04; margin:.35em 0 .2em;
+    font-weight:600; letter-spacing:-.01em; text-wrap:balance; }
+  h1 em { font-style:italic; color:var(--accent); }
+  .lede { font-size:clamp(1.05rem,2.2vw,1.28rem); color:var(--fg); max-width:60ch; }
+  h2 { font-size:clamp(1.4rem,3vw,1.95rem); font-weight:600; letter-spacing:-.01em;
+    margin:0 0 .1em; text-wrap:balance; }
+  h2 .num { font-family:var(--mono); font-size:.8rem; color:var(--accent);
+    letter-spacing:.1em; vertical-align:middle; margin-right:.7em; }
+  h3 { font-size:1.06rem; margin:0 0 .35em; font-weight:600; }
+  .muted { color:var(--muted); }
+  section { margin-top:clamp(48px,7vw,84px); }
+  .sec-head { border-top:1px solid var(--rule); padding-top:20px; margin-bottom:26px; }
+
+  /* header / hero */
+  header { padding-top:8px; }
+  .topbar { display:flex; justify-content:space-between; align-items:center; gap:16px; }
+  .toggle { font-family:var(--sans); font-size:.72rem; letter-spacing:.12em; text-transform:uppercase;
+    background:transparent; color:var(--fg); border:1px solid var(--rule); border-radius:999px;
+    padding:8px 14px; cursor:pointer; display:inline-flex; align-items:center; gap:9px;
+    transition:border-color .3s, color .3s; }
+  .toggle:hover { border-color:var(--accent); color:var(--accent); }
+  .toggle .dot { width:9px; height:9px; border-radius:50%;
+    background:var(--accent); box-shadow:0 0 10px var(--accent); }
+  .toggle:focus-visible, a:focus-visible { outline:2px solid var(--accent); outline-offset:3px; }
+  .worldnote { font-family:var(--sans); font-size:.78rem; color:var(--muted); margin-top:6px; }
+
+  .glyph { display:block; margin:34px auto 0; opacity:.9; }
+
+  /* fusion cards */
+  .grid { display:grid; gap:16px; }
+  .cards4 { grid-template-columns:repeat(auto-fit,minmax(210px,1fr)); }
+  .card { background:var(--card); border:1px solid var(--card-edge); border-radius:12px;
+    padding:20px 20px 22px; }
+  .card .tag { font-family:var(--sans); font-size:.66rem; letter-spacing:.2em; text-transform:uppercase;
+    color:var(--accent); }
+  .card h3 { margin-top:8px; font-size:1.18rem; }
+  .card ul { margin:.5em 0 0; padding-left:1.05em; font-size:.94rem; color:var(--fg); }
+  .card li { margin:.28em 0; }
+  .card .pull { display:block; margin-top:12px; font-size:.82rem; color:var(--muted); font-style:italic; }
+
+  /* plates (framed art) */
+  figure { margin:30px 0 0; }
+  .plate { background:var(--bg-2); border:1px solid var(--plate-edge); border-radius:12px;
+    padding:14px; overflow-x:auto; box-shadow:0 12px 34px -22px rgba(0,0,0,.6); }
+  .plate svg { display:block; width:100%; height:auto; }
+  .plate.tall { max-width:520px; margin:30px auto 0; }
+  figcaption { font-family:var(--sans); font-size:.82rem; color:var(--muted); margin-top:12px;
+    text-align:center; }
+  figcaption b { color:var(--fg); font-weight:600; }
+
+  /* palette chips */
+  .chips { display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:12px; margin-top:8px; }
+  .chip { border:1px solid var(--card-edge); border-radius:10px; overflow:hidden; background:var(--card); }
+  .chip .sw { height:56px; }
+  .chip .meta { padding:8px 11px 10px; }
+  .chip .nm { font-size:.86rem; font-weight:600; }
+  .chip .hx { font-family:var(--mono); font-size:.72rem; color:var(--muted); letter-spacing:.02em; }
+  .chip .role { font-family:var(--sans); font-size:.68rem; color:var(--muted); }
+
+  /* two-col prose blocks */
+  .cols { display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:14px 34px; }
+  .deflist { display:grid; gap:14px; }
+  .deflist .row { display:grid; grid-template-columns:150px 1fr; gap:18px; align-items:baseline;
+    padding-bottom:14px; border-bottom:1px solid var(--rule); }
+  .deflist .k { font-family:var(--sans); font-size:.78rem; text-transform:uppercase; letter-spacing:.12em;
+    color:var(--accent); }
+  .deflist .v { font-size:.98rem; }
+  @media (max-width:560px){ .deflist .row { grid-template-columns:1fr; gap:4px; } }
+
+  /* do / don't */
+  .guard { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+  @media (max-width:600px){ .guard { grid-template-columns:1fr; } }
+  .guard .col { border-radius:12px; padding:18px 20px; border:1px solid var(--card-edge); background:var(--card); }
+  .guard h3 { display:flex; align-items:center; gap:9px; }
+  .guard .mark { font-family:var(--sans); font-weight:700; }
+  .do .mark { color:var(--green); } .dont .mark { color:var(--crimson); }
+  .guard ul { margin:.3em 0 0; padding-left:1.1em; font-size:.95rem; }
+  .guard li { margin:.4em 0; }
+
+  footer { margin-top:80px; border-top:1px solid var(--rule); padding-top:22px;
+    font-family:var(--sans); font-size:.82rem; color:var(--muted);
+    display:flex; justify-content:space-between; flex-wrap:wrap; gap:10px; }
+
+  .reveal { opacity:0; transform:translateY(14px); animation:rise .8s cubic-bezier(.2,.7,.2,1) forwards; }
+  @keyframes rise { to { opacity:1; transform:none; } }
+  @media (prefers-reduced-motion:reduce){ .reveal{ animation:none; opacity:1; transform:none; }
+    body,.toggle{ transition:none; } }
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="topbar">
+      <span class="eyebrow">Quarry · Art Bible</span>
+      <button class="toggle" id="worlds" aria-label="Cross between the physical world and the World of Emanation">
+        <span class="dot"></span><span id="worldlabel">Cross to Emanation</span>
+      </button>
+    </div>
+
+    <h1>A living <em>sacred painting</em> of a ship.</h1>
+    <p class="lede">Ōkami's ink-and-gold spirit worlds, crossed with Wind Waker's bright
+      cel-shaded adventure, wrapped around a biomechanical vessel whose anatomy <em>is</em>
+      the Kabbalistic Tree of Life. Nothing here is grey and grim — even horror is rendered
+      in ink, bone, and gold, not gore.</p>
+    <p class="worldnote">This page is lit by the direction it describes — the two worlds are
+      the two themes. <b>Light is the physical world; dark is the World of Emanation.</b>
+      Cross over, top-right.</p>
+
+    <!-- Merkavah divider -->
+    <svg class="glyph" width="54" height="54" viewBox="0 0 54 54" aria-hidden="true">
+      <g fill="none" stroke="var(--accent)" stroke-width="1.4" opacity=".9">
+        <polygon points="27,7 44,37 10,37"/><polygon points="27,47 10,17 44,17"/>
+      </g>
+    </svg>
+  </header>
+
+  <section class="reveal">
+    <div class="sec-head"><span class="eyebrow">The thesis in four hands</span>
+      <h2>The fusion</h2></div>
+    <p class="muted">We are not copying either game — we borrow specific, nameable qualities,
+      and let the biomech and the sacred make them one thing.</p>
+    <div class="grid cards4" style="margin-top:22px">
+      <div class="card">
+        <span class="tag">Ōkami</span><h3>The ink &amp; the bloom</h3>
+        <ul><li>Sumi-e brush outlines that taper and swell</li><li>Washi-paper grain over all</li>
+          <li>Powers as blossoming ink &amp; gold, not lens flare</li><li>Limited, vivid palette + gold leaf</li></ul>
+        <span class="pull">Pull: Celestial Brush strokes, Konohana bloom, gold-outlined divine beings.</span>
+      </div>
+      <div class="card">
+        <span class="tag">Wind Waker</span><h3>The charm &amp; the read</h3>
+        <ul><li>Cel shading: flat bands + weighty outlines</li><li>Silhouette-first everything</li>
+          <li>Warm color even in danger</li><li>Toon lighting &amp; big particle pop</li></ul>
+        <span class="pull">Pull: the toon-outline look, expressive eyes, wind/particle feedback.</span>
+      </div>
+      <div class="card">
+        <span class="tag">Biomechanical</span><h3>The body of the ship</h3>
+        <ul><li>Sinew + chitin plating + veins of light</li><li>Grown, not built</li>
+          <li>Giger's <em>architecture</em>, de-gore'd into ink &amp; bone</li><li>Awe, not disgust</li></ul>
+        <span class="pull">Pull: ribbed organ-corridors and fused forms — beautiful, not sickening.</span>
+      </div>
+      <div class="card">
+        <span class="tag">Kabbalah</span><h3>The meaning &amp; anatomy</h3>
+        <ul><li>Tree of Life: 10 sefirot, 22 paths</li><li>Merkavah — the Chariot, the ascent</li>
+          <li>Sacred geometry &amp; glowing letter-runes</li><li>Sacred &amp; accurate — never decoration</li></ul>
+        <span class="pull">Treated with consultants; the ship's veins are the 22 paths made real.</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="reveal">
+    <div class="sec-head"><span class="eyebrow">Concept · the centerpiece</span>
+      <h2><span class="num">Plate I</span>The Cylinder</h2></div>
+    <p>The idea that makes Quarry <em>Quarry</em>: the ship's power system is literally the
+      Tree of Life. Ten glowing organ-chambers joined by 22 luminous veins that pulse with
+      harvested life; a Merkavah star for a heart. Sacred geometry as anatomy — never wallpaper.</p>
+    <figure>
+      <div class="plate tall">
+        <!-- CYLINDER -->
+        <svg viewBox="0 0 600 820" font-family="Georgia, serif" aria-label="Concept: the living ship whose spine is the Tree of Life">
+          <defs>
+            <radialGradient id="void" cx="50%" cy="42%" r="60%"><stop offset="0%" stop-color="#1b2330"/><stop offset="100%" stop-color="#0c0f14"/></radialGradient>
+            <filter id="g" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+            <filter id="gsm" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="2" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+            <linearGradient id="hull" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#26313b"/><stop offset="50%" stop-color="#3a4854"/><stop offset="100%" stop-color="#26313b"/></linearGradient>
+          </defs>
+          <rect width="600" height="820" fill="url(#void)"/>
+          <polygon points="255,650 345,650 430,800 170,800" fill="#7FBF6B" opacity="0.12"/>
+          <polygon points="278,650 322,650 360,800 240,800" fill="#7FBF6B" opacity="0.16"/>
+          <path d="M300,88 C186,150 156,320 156,438 C156,566 214,724 300,782 C386,724 444,566 444,438 C444,320 414,150 300,88 Z" fill="url(#hull)" stroke="#12161B" stroke-width="5"/>
+          <g fill="none" stroke="#D8C9A6" stroke-width="1.4" opacity="0.4">
+            <path d="M176,300 C240,282 360,282 424,300"/><path d="M164,420 C250,400 350,400 436,420"/><path d="M186,560 C255,586 345,586 414,560"/>
+          </g>
+          <g filter="url(#g)" stroke="#F2A93C" stroke-width="2.4" opacity="0.9">
+            <line x1="300" y1="120" x2="370" y2="190"/><line x1="300" y1="120" x2="230" y2="190"/><line x1="300" y1="120" x2="300" y2="360"/>
+            <line x1="370" y1="190" x2="230" y2="190"/><line x1="370" y1="190" x2="300" y2="360"/><line x1="370" y1="190" x2="370" y2="290"/>
+            <line x1="230" y1="190" x2="300" y2="360"/><line x1="230" y1="190" x2="230" y2="290"/>
+            <line x1="370" y1="290" x2="230" y2="290"/><line x1="370" y1="290" x2="300" y2="360"/><line x1="370" y1="290" x2="370" y2="470"/>
+            <line x1="230" y1="290" x2="300" y2="360"/><line x1="230" y1="290" x2="230" y2="470"/>
+            <line x1="300" y1="360" x2="370" y2="470"/><line x1="300" y1="360" x2="230" y2="470"/><line x1="300" y1="360" x2="300" y2="545"/>
+            <line x1="370" y1="470" x2="230" y2="470"/><line x1="370" y1="470" x2="300" y2="545"/><line x1="370" y1="470" x2="300" y2="650"/>
+            <line x1="230" y1="470" x2="300" y2="545"/><line x1="230" y1="470" x2="300" y2="650"/><line x1="300" y1="545" x2="300" y2="650"/>
+          </g>
+          <g filter="url(#g)" fill="#FFE39A" stroke="#D9A441" stroke-width="1.6">
+            <circle cx="300" cy="120" r="14"/><circle cx="370" cy="190" r="13"/><circle cx="230" cy="190" r="13"/>
+            <circle cx="370" cy="290" r="13"/><circle cx="230" cy="290" r="13"/><circle cx="370" cy="470" r="13"/><circle cx="230" cy="470" r="13"/>
+            <circle cx="300" cy="545" r="13"/><circle cx="300" cy="650" r="16" fill="#7FBF6B" stroke="#5a9a52"/>
+          </g>
+          <g filter="url(#gsm)" fill="none" stroke="#B79BFF" stroke-width="2.2">
+            <polygon points="300,326 329,377 271,377"/><polygon points="300,394 271,343 329,343"/>
+          </g>
+          <text x="300" y="806" fill="#7f8894" font-size="12" text-anchor="middle" font-style="italic">sinew + chitin + light · ink-outlined · awe, not gore</text>
+        </svg>
+      </div>
+      <figcaption><b>The Cylinder.</b> Amber veins = the 22 paths · gold nodes = the sefirot ·
+        violet heart = the Merkavah engine · green maw = Malkuth, the harvest.</figcaption>
+    </figure>
+  </section>
+
+  <section class="reveal">
+    <div class="sec-head"><span class="eyebrow">The palette has intent</span>
+      <h2><span class="num">02</span>Color system</h2></div>
+    <p>A tight palette, one meaning per color: <b>warm is life &amp; the sacred; cool is
+      fold-space &amp; the ascent.</b> Gold is earned — reserved for sacred geometry, sefirot,
+      and Abby's power. These values also give the prototype's greybox accents a reason to exist.</p>
+    <div class="chips">
+      <div class="chip"><div class="sw" style="background:#12161B"></div><div class="meta"><div class="nm">Ink Black</div><div class="hx">#12161B</div><div class="role">outlines · shadow</div></div></div>
+      <div class="chip"><div class="sw" style="background:#33414D"></div><div class="meta"><div class="nm">Hull Slate</div><div class="hx">#33414D</div><div class="role">chitin &amp; plate</div></div></div>
+      <div class="chip"><div class="sw" style="background:#D8C9A6"></div><div class="meta"><div class="nm">Bone Ivory</div><div class="hx">#D8C9A6</div><div class="role">plating midtone</div></div></div>
+      <div class="chip"><div class="sw" style="background:#EDE3CC"></div><div class="meta"><div class="nm">Washi Paper</div><div class="hx">#EDE3CC</div><div class="role">painted ground</div></div></div>
+      <div class="chip"><div class="sw" style="background:#F2A93C"></div><div class="meta"><div class="nm">Amber Sap</div><div class="hx">#F2A93C</div><div class="role">veins · gravity ⟵ orange</div></div></div>
+      <div class="chip"><div class="sw" style="background:#D98A2B"></div><div class="meta"><div class="nm">Ember Gold</div><div class="hx">#D98A2B</div><div class="role">vein shadow</div></div></div>
+      <div class="chip"><div class="sw" style="background:#FFE39A"></div><div class="meta"><div class="nm">Emanation Gold</div><div class="hx">#FFE39A</div><div class="role">divine light · leaf</div></div></div>
+      <div class="chip"><div class="sw" style="background:#B79BFF"></div><div class="meta"><div class="nm">Merkavah Violet</div><div class="hx">#B79BFF</div><div class="role">spirit ⟵ purple</div></div></div>
+      <div class="chip"><div class="sw" style="background:#8FB6FF"></div><div class="meta"><div class="nm">Ascent Blue</div><div class="hx">#8FB6FF</div><div class="role">ethereal cool</div></div></div>
+      <div class="chip"><div class="sw" style="background:#4FD4E0"></div><div class="meta"><div class="nm">Portal Cyan</div><div class="hx">#4FD4E0</div><div class="role">fold-space ⟵ cyan</div></div></div>
+      <div class="chip"><div class="sw" style="background:#7FBF6B"></div><div class="meta"><div class="nm">Harvest Green</div><div class="hx">#7FBF6B</div><div class="role">seeded life ⟵ green</div></div></div>
+      <div class="chip"><div class="sw" style="background:#E0564B"></div><div class="meta"><div class="nm">Drone Crimson</div><div class="hx">#E0564B</div><div class="role">hostile ⟵ red</div></div></div>
+    </div>
+  </section>
+
+  <section class="reveal">
+    <div class="sec-head"><span class="eyebrow">Motifs · the anatomy kit</span>
+      <h2><span class="num">Plate II</span>Sacred geometry</h2></div>
+    <figure>
+      <div class="plate">
+        <!-- SACRED GEOMETRY -->
+        <svg viewBox="0 0 900 420" font-family="Georgia, serif" aria-label="Sacred geometry motif sheet: Merkavah, Seed of Life, Tree of Life">
+          <defs><filter id="glow2" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="3.2" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
+          <rect width="900" height="420" fill="#12161B"/>
+          <g filter="url(#glow2)" fill="none" stroke="#B79BFF" stroke-width="2.4">
+            <polygon points="150,90 245,255 55,255"/><polygon points="150,310 55,145 245,145"/>
+            <path d="M150,90 L150,310 M55,255 L245,145 M245,255 L55,145" stroke="#8FB6FF" stroke-width="1.2" opacity="0.7"/>
+          </g>
+          <circle cx="150" cy="200" r="118" fill="none" stroke="#33414D" stroke-width="1"/>
+          <text x="150" y="392" fill="#B79BFF" font-size="15" text-anchor="middle">Merkavah — the Chariot</text>
+          <g filter="url(#glow2)" fill="none" stroke="#4FD4E0" stroke-width="2">
+            <circle cx="450" cy="200" r="52"/><circle cx="502" cy="200" r="52"/><circle cx="476" cy="245" r="52"/><circle cx="424" cy="245" r="52"/>
+            <circle cx="398" cy="200" r="52"/><circle cx="424" cy="155" r="52"/><circle cx="476" cy="155" r="52"/>
+          </g>
+          <circle cx="450" cy="200" r="104" fill="none" stroke="#33414D" stroke-width="1"/>
+          <text x="450" y="392" fill="#4FD4E0" font-size="15" text-anchor="middle">Seed / Flower of Life</text>
+          <g stroke="#D9A441" stroke-width="1.6" opacity="0.85">
+            <line x1="750" y1="60" x2="805" y2="108"/><line x1="750" y1="60" x2="695" y2="108"/><line x1="750" y1="60" x2="750" y2="214"/>
+            <line x1="805" y1="108" x2="695" y2="108"/><line x1="805" y1="108" x2="750" y2="214"/><line x1="805" y1="108" x2="805" y2="175"/>
+            <line x1="695" y1="108" x2="750" y2="214"/><line x1="695" y1="108" x2="695" y2="175"/>
+            <line x1="805" y1="175" x2="695" y2="175"/><line x1="805" y1="175" x2="750" y2="214"/><line x1="805" y1="175" x2="805" y2="271"/>
+            <line x1="695" y1="175" x2="750" y2="214"/><line x1="695" y1="175" x2="695" y2="271"/>
+            <line x1="750" y1="214" x2="805" y2="271"/><line x1="750" y1="214" x2="695" y2="271"/><line x1="750" y1="214" x2="750" y2="310"/>
+            <line x1="805" y1="271" x2="695" y2="271"/><line x1="805" y1="271" x2="750" y2="310"/><line x1="805" y1="271" x2="750" y2="367"/>
+            <line x1="695" y1="271" x2="750" y2="310"/><line x1="695" y1="271" x2="750" y2="367"/><line x1="750" y1="310" x2="750" y2="367"/>
+          </g>
+          <g filter="url(#glow2)" fill="#FFE39A" stroke="#D9A441" stroke-width="1.5">
+            <circle cx="750" cy="60" r="13"/><circle cx="805" cy="108" r="13"/><circle cx="695" cy="108" r="13"/><circle cx="805" cy="175" r="13"/><circle cx="695" cy="175" r="13"/>
+            <circle cx="750" cy="214" r="14"/><circle cx="805" cy="271" r="13"/><circle cx="695" cy="271" r="13"/><circle cx="750" cy="310" r="13"/><circle cx="750" cy="367" r="15"/>
+          </g>
+          <text x="750" y="392" fill="#FFE39A" font-size="15" text-anchor="middle">Etz Chaim — Tree of Life</text>
+        </svg>
+      </div>
+      <figcaption><b>The anatomy kit.</b> Merkavah for engines &amp; the spirit blade · the
+        Seed of Life for portals &amp; gravity lattices · the Tree as the whole ship's system.</figcaption>
+    </figure>
+  </section>
+
+  <section class="reveal">
+    <div class="sec-head"><span class="eyebrow">Read it black first</span>
+      <h2><span class="num">Plate III</span>Silhouettes</h2></div>
+    <figure>
+      <div class="plate">
+        <!-- SILHOUETTES -->
+        <svg viewBox="0 0 900 380" font-family="Georgia, serif" aria-label="Silhouette studies">
+          <rect width="900" height="380" fill="#EDE3CC"/>
+          <g fill="#12161B"><path d="M120,96 C82,132 74,196 74,236 C74,286 96,338 120,356 C144,338 166,286 166,236 C166,196 158,132 120,96 Z"/></g>
+          <text x="120" y="374" fill="#12161B" font-size="12" text-anchor="middle">The Cylinder</text>
+          <g fill="#12161B"><circle cx="300" cy="118" r="17"/>
+            <path d="M282,140 C270,150 268,210 276,250 L288,300 L296,300 L294,250 L306,250 L304,300 L312,300 L324,250 C332,210 330,150 318,140 Z"/>
+            <path d="M282,148 L262,210 L270,214 L290,160 Z"/><path d="M318,148 L338,210 L330,214 L310,160 Z"/></g>
+          <polygon points="300,178 314,200 300,222 286,200" fill="#EDE3CC"/><polygon points="300,186 308,200 300,214 292,200" fill="#12161B"/>
+          <text x="300" y="374" fill="#12161B" font-size="12" text-anchor="middle">Harvested drone</text>
+          <g fill="#12161B"><path d="M460,110 C438,150 430,150 430,210 C430,270 448,320 460,340 C472,320 490,270 490,210 C490,150 482,150 460,110 Z"/>
+            <path d="M414,300 C440,320 480,320 506,300 L506,344 L414,344 Z"/></g>
+          <circle cx="460" cy="205" r="9" fill="#EDE3CC"/>
+          <text x="460" y="374" fill="#12161B" font-size="12" text-anchor="middle">Sefirah chamber</text>
+          <g fill="#12161B"><circle cx="635" cy="120" r="15"/><path d="M628,108 C612,112 610,132 622,150 L628,150 Z"/>
+            <path d="M620,150 C614,168 614,210 622,250 L618,320 L630,320 L636,252 L642,252 L648,320 L660,320 L654,250 C662,210 662,168 654,150 Z"/>
+            <path d="M622,168 L604,214 L612,218 L628,178 Z"/><path d="M652,168 L672,210 L664,216 L646,178 Z"/><rect x="620" y="196" width="36" height="10" rx="2"/></g>
+          <circle cx="661" cy="212" r="4" fill="#D9A441"/>
+          <text x="637" y="374" fill="#12161B" font-size="12" text-anchor="middle">Abby Koval</text>
+          <g fill="#12161B"><circle cx="810" cy="215" r="78"/></g><circle cx="810" cy="215" r="58" fill="#EDE3CC"/>
+          <g fill="none" stroke="#12161B" stroke-width="4"><polygon points="810,172 847,236 773,236"/><polygon points="810,258 773,194 847,194"/></g>
+          <text x="810" y="374" fill="#12161B" font-size="12" text-anchor="middle">Portal — folded space</text>
+        </svg>
+      </div>
+      <figcaption><b>Sinew vs. star.</b> Every hero form pairs a soft organic mass with crisp
+        sacred geometry. If it doesn't read in black, it gets redesigned.</figcaption>
+    </figure>
+  </section>
+
+  <section class="reveal">
+    <div class="sec-head"><span class="eyebrow">Two renders, one game</span>
+      <h2><span class="num">03</span>The two worlds</h2></div>
+    <p>The physical/spirit split is a <em>render state</em>, not just a mood — and it doubles
+      as gameplay legibility. Pressing <b>F</b> should shift the whole frame toward the sacred.
+      (That's the toggle you're holding: this page's light and dark <em>are</em> these worlds.)</p>
+    <div class="deflist" style="margin-top:22px">
+      <div class="row"><div class="k">Physical · Assiah</div><div class="v">Grounded, warm, Wind Waker. Thick confident ink, fuller cel color, toon key light with warm bounce. The world of action.</div></div>
+      <div class="row"><div class="k">Spirit · Atzilut</div><div class="v">Ethereal, luminous, Ōkami. Outlines dissolve into brushstroke, color desaturates toward gold and pale blue, bloom and paper-grain rise, and hidden things (spirit-only paths, runes) reveal as glowing ink.</div></div>
+      <div class="row"><div class="k">In engine</div><div class="v">One toggled screen shader sells the ascent: desaturate, push gold tint, raise bloom + grain, thin the outlines.</div></div>
+    </div>
+  </section>
+
+  <section class="reveal">
+    <div class="sec-head"><span class="eyebrow">Direction, made technical</span>
+      <h2><span class="num">04</span>Render · VFX · UI</h2></div>
+    <div class="deflist">
+      <div class="row"><div class="k">Cel &amp; ink</div><div class="v">Banded toon diffuse (2–3 bands) + screen-space ink outlines (depth+normal edge detect). A subtle washi grain multiplied over the whole frame so it reads <em>painted</em>.</div></div>
+      <div class="row"><div class="k">Everything sacred glows</div><div class="v">Veins, runes, sefirot, portals, spirit — all on emission, read through WorldEnvironment bloom. Author cel ramps, not photoreal PBR.</div></div>
+      <div class="row"><div class="k">VFX language</div><div class="v">Powers = Ōkami ink-bloom (the spirit blade is one calligraphic stroke). Feedback = Wind Waker pop (wind-lines, sparkle bursts). Sacred tech opens as a rotating Merkavah + Seed-of-Life ring.</div></div>
+      <div class="row"><div class="k">UI</div><div class="v">Parchment, ink, and gold-leaf frames with sacred-geometry corners. Diegetic where possible — the spirit meter is a sefirah filling with light. Calm and sacred, the opposite of a busy sci-fi HUD.</div></div>
+    </div>
+  </section>
+
+  <section class="reveal">
+    <div class="sec-head"><span class="eyebrow">Guardrails</span>
+      <h2><span class="num">05</span>Do &amp; don't</h2></div>
+    <div class="guard">
+      <div class="col do"><h3><span class="mark">✓</span> Do</h3>
+        <ul><li>Treat Kabbalah motifs as sacred, accurate, intentional — consult from pre-production.</li>
+          <li>Silhouette-test everything; keep the palette disciplined; keep gold earned.</li>
+          <li>Hold the ink-and-bloom beauty even in the ship's most harvested places.</li></ul></div>
+      <div class="col dont"><h3><span class="mark">✕</span> Don't</h3>
+        <ul><li>Photoreal gore — we're ink and bone, awe not disgust.</li>
+          <li>Hebrew or sacred symbols as random decoration or wallpaper.</li>
+          <li>Muddy "gritty sci-fi," or lose the silhouette to detail.</li></ul></div>
+    </div>
+  </section>
+
+  <footer>
+    <span>Quarry · Art Bible — art <em>direction</em>, not production. Explore on paper; commit to polygons once a slice is proven fun.</span>
+    <span>github.com/nathanaelries/quarry · docs/ART_BIBLE.md</span>
+  </footer>
+</div>
+
+<script>
+  (function () {
+    var root = document.documentElement;
+    var btn = document.getElementById('worlds');
+    var label = document.getElementById('worldlabel');
+    function current() {
+      var t = root.getAttribute('data-theme');
+      if (t) return t;
+      return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    }
+    function sync() {
+      label.textContent = current() === 'dark' ? 'Return to the Physical' : 'Cross to Emanation';
+    }
+    btn.addEventListener('click', function () {
+      root.setAttribute('data-theme', current() === 'dark' ? 'light' : 'dark');
+      sync();
+    });
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', sync);
+    sync();
+  })();
+</script>
