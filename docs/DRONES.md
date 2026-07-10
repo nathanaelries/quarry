@@ -61,10 +61,20 @@ drones, and dies on walls.
 South of spawn, between you and the sealed rooms, a small encounter: two **melee** drones
 (junior/middle) patrolling and one **ranged** drone (middle). Walk in and they engage.
 
+## Pathfinding
+
+Drones navigate with a **baked navmesh**. At startup the world tags all static geometry into
+a `navgeo` group and bakes a `NavigationRegion3D` from it (`world.gd::_build_navigation`);
+each AI drone carries a `NavigationAgent3D` and steers along `get_next_path_position()`
+toward its goal. So a chaser **routes around walls, the firing-range plinth, and platforms**
+instead of getting stuck on them. The bake is synchronous at load; agents idle for the frame
+it takes the navigation map to sync, then move.
+
 ## Known limits (future work)
 
-- **Pathfinding is direct-steer + whisker avoidance**, not a navmesh. Drones steer around
-  obstacles they can see at shin height, but a cluttered choke can still stump them. A baked
-  `NavigationRegion3D` / `NavigationAgent3D` is the proper next step.
+- **No inter-agent avoidance (RVO).** Agents share a navmesh but can overlap when they
+  converge on you; enabling `NavigationAgent3D` avoidance is a drop-in next step.
+- Multi-floor / re-orientable-gravity navigation: the navmesh is the flat arena. Drones are
+  ground units and don't path on walls/ceilings or the planetoid.
 - No group/alert propagation (one drone spotting you doesn't call the others), no cover use,
   no flanking. All good candidates once the core loop proves fun.

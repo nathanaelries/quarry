@@ -42,6 +42,7 @@ func _ready() -> void:
 	_build_spirit_demo(player)
 	_build_spirit_reveal_demo(player)
 	_build_loot_demo(player)
+	_build_navigation()                  # bake after all geometry exists, before AI drones
 	_build_combat_demo(player)
 
 	var hud: CanvasLayer = HudScript.new()
@@ -306,6 +307,28 @@ func _add_box(center: Vector3, size: Vector3, color: Color, emissive := false, e
 	col.shape = shape
 	body.add_child(col)
 
+	body.add_to_group("navgeo")          # source geometry for the navmesh bake
 	add_child(body)
 	body.global_position = center
 	return body
+
+
+# Bake a navmesh from all the static "navgeo" geometry so AI drones path around it.
+# Called after the geometry exists and before the AI drones spawn.
+func _build_navigation() -> void:
+	var region := NavigationRegion3D.new()
+	var navmesh := NavigationMesh.new()
+	navmesh.cell_size = 0.25
+	# cell_height matches the default map; agent_height / max_climb are exact multiples of
+	# it (1.5 = 6·0.25, 0.5 = 2·0.25) to avoid voxel-quantization warnings.
+	navmesh.cell_height = 0.25
+	navmesh.agent_height = 1.5
+	navmesh.agent_radius = 0.5
+	navmesh.agent_max_climb = 0.5
+	navmesh.agent_max_slope = 45.0
+	navmesh.geometry_parsed_geometry_type = NavigationMesh.PARSED_GEOMETRY_STATIC_COLLIDERS
+	navmesh.geometry_source_geometry_mode = NavigationMesh.SOURCE_GEOMETRY_GROUPS_WITH_CHILDREN
+	navmesh.geometry_source_group_name = "navgeo"
+	region.navigation_mesh = navmesh
+	add_child(region)
+	region.bake_navigation_mesh(false)   # synchronous bake from the group

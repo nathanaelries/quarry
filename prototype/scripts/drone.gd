@@ -53,6 +53,7 @@ var _search_t := 0.0
 var _last_seen := Vector3.ZERO
 var _patrol_target := Vector3.ZERO
 var _repath_t := 0.0
+var _agent: NavigationAgent3D
 
 var _mat: StandardMaterial3D
 var _eye_mat: StandardMaterial3D
@@ -104,6 +105,13 @@ func _ready() -> void:
 
 	if ai_enabled:
 		_state = State.PATROL
+		_agent = NavigationAgent3D.new()
+		_agent.radius = 0.5
+		_agent.height = 1.4
+		_agent.path_desired_distance = 0.6
+		_agent.target_desired_distance = 0.8
+		_agent.path_max_distance = 4.0
+		add_child(_agent)
 
 
 # ---------------------------------------------------------------------------
@@ -212,43 +220,23 @@ func _can_see_player() -> bool:
 	return hit.is_empty() or hit.get("collider") == _player
 
 
+## Move toward `target` along the navmesh path (routes around baked geometry).
 func _move_toward(target: Vector3, speed: float, delta: float) -> void:
-	var dir := target - global_position
+	if _agent == null:
+		return
+	if _agent.target_position.distance_to(target) > 0.75:
+		_agent.target_position = target        # repath only when the goal actually moves
+	var next := _agent.get_next_path_position()  # current position until the map is ready
+	var dir := next - global_position
 	dir.y = 0.0
-	if dir.length() > 0.05:
-		dir = _avoid(dir.normalized())
+	if dir.length() > 0.2:
+		dir = dir.normalized()
 		velocity.x = dir.x * speed
 		velocity.z = dir.z * speed
 		_face(global_position + dir, delta)
 	else:
 		velocity.x = 0.0
 		velocity.z = 0.0
-
-
-## Whisker obstacle-avoidance: if something (not the player) blocks the way ahead,
-## steer toward the more open side. Cheap stand-in for a navmesh.
-func _avoid(dir: Vector3) -> Vector3:
-	var space := get_world_3d().direct_space_state
-	var origin := global_position + Vector3(0, -0.35, 0)   # shin height, so low ledges are seen
-	var ahead := 2.0
-	var skip := [get_rid()]
-	if _player:
-		skip.append((_player as CollisionObject3D).get_rid())
-	if _clear(space, origin, dir, ahead, skip):
-		return dir
-	var left := dir.rotated(Vector3.UP, PI / 2.0)
-	var right := dir.rotated(Vector3.UP, -PI / 2.0)
-	if _clear(space, origin, left, ahead, skip):
-		return (dir + left).normalized()
-	if _clear(space, origin, right, ahead, skip):
-		return (dir + right).normalized()
-	return dir
-
-
-func _clear(space: PhysicsDirectSpaceState3D, origin: Vector3, dir: Vector3, dist: float, skip: Array) -> bool:
-	var params := PhysicsRayQueryParameters3D.create(origin, origin + dir * dist)
-	params.exclude = skip
-	return space.intersect_ray(params).is_empty()
 
 
 func _face(target: Vector3, delta: float) -> void:

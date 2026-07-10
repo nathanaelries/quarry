@@ -88,9 +88,9 @@ South of spawn, live drones **patrol** until they **spot you** (sight cone + lin
 then **chase** and **attack** — two melee lungers and one ranged caster that fires bolts.
 Shooting one **aggros** it. They ignore gravity flips (so flip a room and *you* fall to the
 ceiling while they keep their footing). You now have **5 health** (pips, top-center); a hit
-shakes + flashes red, and at zero you death-walk and resurrect. Full design:
-[`../docs/DRONES.md`](../docs/DRONES.md). Pathing is direct-steer + whisker avoidance (no
-navmesh yet), so a cluttered choke can still stump a chaser.
+shakes + flashes red, and at zero you death-walk and resurrect. They navigate with a
+**baked navmesh** (`NavigationRegion3D` + `NavigationAgent3D`), so a chaser routes around
+walls and platforms instead of getting stuck. Full design: [`../docs/DRONES.md`](../docs/DRONES.md).
 
 ## Feel & audio (juice)
 
