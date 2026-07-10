@@ -12,6 +12,9 @@ var _death_bg: ColorRect
 var _death_text: Label
 var _inv: Label
 var _toast_y := 560.0
+var _pips: Array = []
+var _dmg_flash: ColorRect
+const HEALTH_PIPS := 5
 
 
 func _ready() -> void:
@@ -27,6 +30,7 @@ func _ready() -> void:
 		"Around the arena:",
 		"· ahead — drone range + crates: shoot for salvage,",
 		"          spirit-blade for essence (rank = bigger haul)",
+		"· S   live drones patrol — they spot you, chase & attack",
 		"· E   orange planetoid — walk around it",
 		"· N   green strip — walk up the wall",
 		"· W   cyan portals — look / step / shoot through",
@@ -55,6 +59,7 @@ func _ready() -> void:
 
 	_build_crosshair()
 	_build_death_overlay()
+	_build_health()
 
 	_inv = _make_label()
 	_inv.position = Vector2(16, 402)
@@ -66,9 +71,11 @@ func _ready() -> void:
 		player.died.connect(_on_died)
 		player.resurrected.connect(_on_resurrected)
 		player.picked_up.connect(_on_picked_up)
+		player.damaged.connect(_on_damaged)
 	_on_mode_changed(false)
 	_on_spirit_time(0.0)
 	_refresh_inventory()
+	_on_damaged(1.0)
 
 
 func _build_crosshair() -> void:
@@ -98,6 +105,25 @@ func _build_death_overlay() -> void:
 	_death_text.size = Vector2(320, 80)
 	_death_text.visible = false
 	add_child(_death_text)
+
+
+func _build_health() -> void:
+	var cx := get_viewport().get_visible_rect().size.x
+	var total_w := HEALTH_PIPS * 26.0 - 6.0
+	var start_x := cx * 0.5 - total_w * 0.5
+	for i in HEALTH_PIPS:
+		var pip := ColorRect.new()
+		pip.size = Vector2(20, 20)
+		pip.position = Vector2(start_x + i * 26.0, 24)
+		add_child(pip)
+		_pips.append(pip)
+
+	_dmg_flash = ColorRect.new()
+	_dmg_flash.color = Color(0.8, 0.1, 0.12, 0.0)
+	_dmg_flash.anchor_right = 1.0
+	_dmg_flash.anchor_bottom = 1.0
+	_dmg_flash.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(_dmg_flash)
 
 
 func _make_label() -> Label:
@@ -131,6 +157,16 @@ func _on_died() -> void:
 func _on_resurrected() -> void:
 	_death_bg.visible = false
 	_death_text.visible = false
+
+
+func _on_damaged(fraction: float) -> void:
+	var filled := int(round(fraction * HEALTH_PIPS))
+	for i in _pips.size():
+		_pips[i].color = Color(0.9, 0.3, 0.32) if i < filled else Color(1, 1, 1, 0.14)
+	if fraction < 1.0 and _dmg_flash:
+		_dmg_flash.color.a = 0.34
+		var tw := create_tween()
+		tw.tween_property(_dmg_flash, "color:a", 0.0, 0.3)
 
 
 func _on_picked_up(text: String, color: Color, rarity: String) -> void:

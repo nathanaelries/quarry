@@ -113,6 +113,9 @@ func _build_library() -> void:
 	_lib["pickup"] = _wav(_tone(0.13, 680, 1080, 0.04, 0.005, 2.6, 0.55))
 	_lib["pickup_rare"] = _wav(_shimmer(0.36, [900, 1350, 1780], 0.02, false))
 	_lib["break"] = _wav(_tone(0.16, 220, 60, 0.9, 0.002, 2.0, 0.9))
+	_lib["drone_alert"] = _wav(_tone(0.28, 480, 900, 0.05, 0.02, 1.4, 0.5))
+	_lib["drone_shot"] = _wav(_tone(0.12, 900, 300, 0.3, 0.003, 2.4, 0.7))
+	_lib["hurt"] = _wav(_mix(_tone(0.22, 190, 70, 0.55, 0.002, 2.0, 0.9), _tone(0.22, 95, 50, 0.0, 0.002, 1.8, 0.5)))
 
 
 func _wav(samples: PackedFloat32Array) -> AudioStreamWAV:

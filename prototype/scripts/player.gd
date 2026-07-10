@@ -30,6 +30,7 @@ const PROJECTILE := preload("res://scripts/projectile.gd")
 const SHAKE_MAX := 0.16            # camera-shake max offset (metres)
 const SHAKE_DECAY := 3.2
 const STEP_INTERVAL := 0.42        # seconds between footstep sfx while moving
+const MAX_HEALTH := 5              # hits before the death-walk
 
 # ---- State ----------------------------------------------------------------
 var current_up := Vector3.UP
@@ -41,6 +42,7 @@ var in_spirit := false
 var spirit_time_left := 0.0
 var spawn_point := Vector3.ZERO     # set by world.gd after positioning; resurrection returns here
 var is_dead := false
+var health := MAX_HEALTH
 var _trauma := 0.0                   # camera shake, decays each frame
 var _step_t := 0.0
 
@@ -56,6 +58,7 @@ signal mode_changed(is_spirit: bool)
 signal spirit_time_changed(fraction: float)
 signal died()
 signal resurrected()
+signal damaged(fraction: float)
 signal picked_up(text: String, color: Color, rarity: String)
 
 var inventory := {}                 # item id -> count
@@ -398,6 +401,18 @@ func _slash() -> void:
 # ---------------------------------------------------------------------------
 # Death & resurrection — dying is a beat, not a wall
 # ---------------------------------------------------------------------------
+## Taken a hit from a drone.
+func take_damage(amount: int) -> void:
+	if is_dead:
+		return
+	health = maxi(0, health - amount)
+	add_shake(0.28)
+	Juice.play_2d("hurt", -2.0)
+	damaged.emit(float(health) / float(MAX_HEALTH))
+	if health <= 0:
+		die()
+
+
 ## Shot yourself through a portal. Same consequence as any death: you come back.
 func hit_self() -> void:
 	die()
@@ -426,7 +441,9 @@ func _resurrect() -> void:
 	velocity = Vector3.ZERO
 	global_position = spawn_point
 	up_direction = current_up
+	health = MAX_HEALTH
 	is_dead = false
+	damaged.emit(1.0)
 	resurrected.emit()
 
 

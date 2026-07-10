@@ -63,7 +63,8 @@ Everything in the mechanic triad is now live in one arena:
 | `scripts/gravity_path.gd` | Lit walkway you ride up a wall. |
 | `scripts/gravity_region.gd` | A volume whose pull a switch can flip. |
 | `scripts/gravity_switch.gd` | Shootable switch that flips its linked region. |
-| `scripts/drone.gd` | Dummy target — vulnerable to gun, blade, or both. |
+| `scripts/drone.gd` | Drone: loot target + AI agent (perception, patrol/chase/attack/search, melee/ranged). |
+| `scripts/enemy_bolt.gd` | Hostile projectile fired by ranged drones. |
 | `scripts/spirit_lock.gd` | Spirit-only lock that opens a door. |
 | `scripts/spirit_reveal.gd` | Bridge the spirit reveals for the body to cross. |
 | `scripts/juice.gd` | Autoload `Juice`: procedural SFX, screen-shake helpers, impact sparks, spirit audio filter. |
@@ -80,6 +81,16 @@ Sefirah Motes). Drone **rank** (junior/middle/senior) scales the haul. Breakable
 and **reliquaries** have their own pools. Drops float up as rarity-colored motes, magnet to
 you, and land in the **satchel** (top-left counter) with a toast. Full design +
 tuning-by-data: [`../docs/LOOT.md`](../docs/LOOT.md).
+
+## Drones & combat (AI)
+
+South of spawn, live drones **patrol** until they **spot you** (sight cone + line-of-sight),
+then **chase** and **attack** — two melee lungers and one ranged caster that fires bolts.
+Shooting one **aggros** it. They ignore gravity flips (so flip a room and *you* fall to the
+ceiling while they keep their footing). You now have **5 health** (pips, top-center); a hit
+shakes + flashes red, and at zero you death-walk and resurrect. Full design:
+[`../docs/DRONES.md`](../docs/DRONES.md). Pathing is direct-steer + whisker avoidance (no
+navmesh yet), so a cluttered choke can still stump a chaser.
 
 ## Feel & audio (juice)
 

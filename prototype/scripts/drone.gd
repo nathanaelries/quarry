@@ -1,24 +1,62 @@
-extends StaticBody3D
-## Quarry prototype — a dummy drone target that drops loot.
+extends CharacterBody3D
+## Quarry prototype — a drone: loot target AND AI agent.
 ##
 ## Configure before adding to the tree:
 ##   • vulnerable_to : "physical" | "spirit" | "both"
-##   • rank          : "junior" | "middle" | "senior"  (more/richer loot, more HP)
+##   • rank          : "junior" | "middle" | "senior"   (HP, speed, loot)
+##   • ai_enabled    : false → a stationary dummy (loot range); true → active AI
+##   • archetype     : "melee" (lunges) | "ranged" (fires bolts)
 ##
-## The KILL METHOD decides the loot (BOTW's condition mechanic): a physical kill
-## yields salvage; a spirit-blade kill strikes the soul and yields spirit essence.
-## A spirit-only drone reads purple; a normal one reads red.
+## AI loop: PATROL → (spot the player: vision cone + line-of-sight) → CHASE → ATTACK,
+## SEARCH the last-known spot if it loses you, then back to PATROL. Taking damage aggros it.
+##
+## Drones use world-down gravity and ignore gravity fields — the design's player/enemy
+## asymmetry: flip a room and the drones keep their footing while you fall to the ceiling.
+## The kill METHOD still decides the loot (shoot → salvage, spirit-blade → essence).
 
+const ENEMY_BOLT := preload("res://scripts/enemy_bolt.gd")
+
+# ---- Config --------------------------------------------------------------
 var vulnerable_to := "both"
 var rank := "junior"
+var ai_enabled := false
+var archetype := "melee"
 
-var _health := 2
-var _last_kind := "physical"
-var _mat: StandardMaterial3D
-var _base_color := Color(0.85, 0.2, 0.25)
-
+# ---- Tuning --------------------------------------------------------------
 const RANK_HP := {"junior": 2, "middle": 3, "senior": 4}
+const RANK_SPEED := {"junior": 3.2, "middle": 3.9, "senior": 4.6}
 const RANK_SCALE := {"junior": 0.85, "middle": 1.0, "senior": 1.2}
+const GRAVITY := 20.0
+const VISION_RANGE := 17.0
+const FOV_COS := 0.42                # cos(~65°) half-angle of the sight cone
+const MELEE_RANGE := 2.0
+const RANGED_RANGE := 11.0
+const ATTACK_CD := 1.3
+const MELEE_DAMAGE := 1
+const SEARCH_TIME := 4.0
+const PATROL_RADIUS := 5.0
+const TURN_RATE := 7.0
+
+enum State { IDLE, PATROL, CHASE, ATTACK, SEARCH }
+
+# ---- State ---------------------------------------------------------------
+var _state := State.IDLE
+var _health := 2
+var _speed := 3.2
+var _last_kind := "physical"
+var _alive := true
+var _home := Vector3.ZERO
+var _home_set := false
+var _player: Node3D
+var _atk_cd := 0.0
+var _search_t := 0.0
+var _last_seen := Vector3.ZERO
+var _patrol_target := Vector3.ZERO
+var _repath_t := 0.0
+
+var _mat: StandardMaterial3D
+var _eye_mat: StandardMaterial3D
+var _base_color := Color(0.85, 0.2, 0.25)
 
 
 func _ready() -> void:
@@ -26,9 +64,11 @@ func _ready() -> void:
 	if vulnerable_to == "spirit":
 		_base_color = Color(0.6, 0.35, 0.95)
 	if vulnerable_to != "physical":
-		add_to_group("spirit_targets")     # both/spirit can be slashed
+		add_to_group("spirit_targets")
 	_health = RANK_HP.get(rank, 2)
+	_speed = RANK_SPEED.get(rank, 3.2)
 	var s: float = RANK_SCALE.get(rank, 1.0)
+	_player = get_tree().get_first_node_in_group("player")
 
 	var mesh := MeshInstance3D.new()
 	var m := BoxMesh.new()
@@ -41,23 +81,245 @@ func _ready() -> void:
 	mesh.material_override = _mat
 	add_child(mesh)
 
+	# A forward "eye" so you can read facing and alert state.
+	var eye := MeshInstance3D.new()
+	var em := SphereMesh.new()
+	em.radius = 0.13
+	em.height = 0.26
+	eye.mesh = em
+	_eye_mat = StandardMaterial3D.new()
+	_eye_mat.albedo_color = Color(1, 1, 0.7)
+	_eye_mat.emission_enabled = true
+	_eye_mat.emission = Color(1, 0.95, 0.5)
+	_eye_mat.emission_energy_multiplier = 1.5
+	eye.material_override = _eye_mat
+	eye.position = Vector3(0, 0.2, -0.46) * s
+	add_child(eye)
+
 	var col := CollisionShape3D.new()
 	var shape := BoxShape3D.new()
 	shape.size = Vector3(0.9, 1.4, 0.9) * s
 	col.shape = shape
 	add_child(col)
 
+	if ai_enabled:
+		_state = State.PATROL
 
+
+# ---------------------------------------------------------------------------
+# AI loop
+# ---------------------------------------------------------------------------
+func _physics_process(delta: float) -> void:
+	if not _alive or not ai_enabled:
+		return                                  # dummies just float where placed
+	if not _home_set:
+		_home = global_position
+		_patrol_target = _pick_patrol()
+		_home_set = true
+	if _player == null:
+		_player = get_tree().get_first_node_in_group("player")
+
+	_atk_cd = maxf(0.0, _atk_cd - delta)
+
+	if is_on_floor():
+		velocity.y = 0.0
+	else:
+		velocity.y -= GRAVITY * delta
+
+	match _state:
+		State.PATROL: _do_patrol(delta)
+		State.CHASE: _do_chase(delta)
+		State.ATTACK: _do_attack(delta)
+		State.SEARCH: _do_search(delta)
+
+	move_and_slide()
+
+
+func _do_patrol(delta: float) -> void:
+	_repath_t -= delta
+	if global_position.distance_to(_patrol_target) < 1.2 or _repath_t <= 0.0:
+		_patrol_target = _pick_patrol()
+		_repath_t = 3.5
+	_move_toward(_patrol_target, _speed * 0.5, delta)
+	if _can_see_player():
+		_alert()
+
+
+func _do_chase(delta: float) -> void:
+	if _can_see_player():
+		_last_seen = _player.global_position
+		var reach := MELEE_RANGE if archetype == "melee" else RANGED_RANGE
+		if global_position.distance_to(_player.global_position) <= reach:
+			_state = State.ATTACK
+			return
+		_move_toward(_player.global_position, _speed, delta)
+	else:
+		_state = State.SEARCH
+		_search_t = SEARCH_TIME
+
+
+func _do_attack(delta: float) -> void:
+	if not _can_see_player():
+		_state = State.SEARCH
+		_search_t = SEARCH_TIME
+		return
+	_face(_player.global_position, delta)
+	var dist := global_position.distance_to(_player.global_position)
+	var reach := MELEE_RANGE if archetype == "melee" else RANGED_RANGE
+	if dist > reach * 1.15:
+		_state = State.CHASE
+		return
+	# hold ground (ranged keeps distance a touch)
+	if archetype == "ranged" and dist < RANGED_RANGE * 0.55:
+		_move_toward(global_position * 2.0 - _player.global_position, _speed * 0.8, delta)
+	else:
+		velocity.x = move_toward(velocity.x, 0.0, _speed * 8.0 * delta)
+		velocity.z = move_toward(velocity.z, 0.0, _speed * 8.0 * delta)
+	if _atk_cd <= 0.0:
+		_attack(dist)
+		_atk_cd = ATTACK_CD
+
+
+func _do_search(delta: float) -> void:
+	_search_t -= delta
+	if _can_see_player():
+		_alert()
+		return
+	if _search_t <= 0.0 or global_position.distance_to(_last_seen) < 1.4:
+		_state = State.PATROL
+		_patrol_target = _pick_patrol()
+		_eye_mat.emission = Color(1, 0.95, 0.5)
+		return
+	_move_toward(_last_seen, _speed * 0.8, delta)
+
+
+# ---------------------------------------------------------------------------
+# Perception / movement
+# ---------------------------------------------------------------------------
+func _can_see_player() -> bool:
+	if _player == null:
+		return false
+	var to: Vector3 = _player.global_position - global_position
+	var dist := to.length()
+	if dist > VISION_RANGE or dist < 0.05:
+		return dist <= VISION_RANGE            # point-blank always counts
+	if (-global_transform.basis.z).dot(to / dist) < FOV_COS and _state == State.PATROL:
+		return false                            # only the sight cone limits an unaware drone
+	var from := global_position + Vector3(0, 1.0, 0)
+	var params := PhysicsRayQueryParameters3D.create(from, _player.global_position + Vector3(0, 0.4, 0))
+	params.exclude = [get_rid()]
+	var hit := get_world_3d().direct_space_state.intersect_ray(params)
+	return hit.is_empty() or hit.get("collider") == _player
+
+
+func _move_toward(target: Vector3, speed: float, delta: float) -> void:
+	var dir := target - global_position
+	dir.y = 0.0
+	if dir.length() > 0.05:
+		dir = _avoid(dir.normalized())
+		velocity.x = dir.x * speed
+		velocity.z = dir.z * speed
+		_face(global_position + dir, delta)
+	else:
+		velocity.x = 0.0
+		velocity.z = 0.0
+
+
+## Whisker obstacle-avoidance: if something (not the player) blocks the way ahead,
+## steer toward the more open side. Cheap stand-in for a navmesh.
+func _avoid(dir: Vector3) -> Vector3:
+	var space := get_world_3d().direct_space_state
+	var origin := global_position + Vector3(0, -0.35, 0)   # shin height, so low ledges are seen
+	var ahead := 2.0
+	var skip := [get_rid()]
+	if _player:
+		skip.append((_player as CollisionObject3D).get_rid())
+	if _clear(space, origin, dir, ahead, skip):
+		return dir
+	var left := dir.rotated(Vector3.UP, PI / 2.0)
+	var right := dir.rotated(Vector3.UP, -PI / 2.0)
+	if _clear(space, origin, left, ahead, skip):
+		return (dir + left).normalized()
+	if _clear(space, origin, right, ahead, skip):
+		return (dir + right).normalized()
+	return dir
+
+
+func _clear(space: PhysicsDirectSpaceState3D, origin: Vector3, dir: Vector3, dist: float, skip: Array) -> bool:
+	var params := PhysicsRayQueryParameters3D.create(origin, origin + dir * dist)
+	params.exclude = skip
+	return space.intersect_ray(params).is_empty()
+
+
+func _face(target: Vector3, delta: float) -> void:
+	var flat := Vector3(target.x - global_position.x, 0, target.z - global_position.z)
+	if flat.length() < 0.05:
+		return
+	var want := atan2(flat.x, flat.z)
+	rotation.y = lerp_angle(rotation.y, want, clampf(TURN_RATE * delta, 0.0, 1.0))
+
+
+func _pick_patrol() -> Vector3:
+	var a := randf() * TAU
+	var r := randf_range(1.5, PATROL_RADIUS)
+	return _home + Vector3(cos(a) * r, 0, sin(a) * r)
+
+
+# ---------------------------------------------------------------------------
+# Combat
+# ---------------------------------------------------------------------------
+func _alert() -> void:
+	_state = State.CHASE
+	_last_seen = _player.global_position
+	_eye_mat.emission = Color(1.0, 0.25, 0.2)
+	Juice.play_3d("drone_alert", global_position, -4.0)
+
+
+func _attack(dist: float) -> void:
+	if archetype == "ranged":
+		_fire_bolt()
+	elif dist <= MELEE_RANGE + 0.4:
+		_melee()
+
+
+func _melee() -> void:
+	if _player and _player.has_method("take_damage"):
+		_player.take_damage(MELEE_DAMAGE)
+	Juice.play_3d("drone_shot", global_position, -3.0)
+	# lunge punch
+	var to := (_player.global_position - global_position)
+	to.y = 0.0
+	if to.length() > 0.05:
+		velocity += to.normalized() * 6.0
+	var tw := create_tween()
+	tw.tween_property(self, "scale", Vector3(1.25, 0.8, 1.25), 0.08)
+	tw.tween_property(self, "scale", Vector3.ONE, 0.12)
+
+
+func _fire_bolt() -> void:
+	var eye := global_position + Vector3(0, 1.0, 0) + (-global_transform.basis.z) * 0.6
+	var target: Vector3 = _player.global_position + Vector3(0, 0.5, 0)
+	var bolt: Node3D = ENEMY_BOLT.new()
+	get_parent().add_child(bolt)
+	bolt.launch(eye, target - eye)
+	Juice.play_3d("drone_shot", global_position, -2.0)
+
+
+# ---------------------------------------------------------------------------
+# Damage / death / loot
+# ---------------------------------------------------------------------------
 func take_hit(amount: int, kind: String) -> void:
 	if vulnerable_to != "both" and kind != vulnerable_to:
-		_flash(Color(0.5, 0.5, 0.55))     # resistant — sparks but no damage
+		_flash(Color(0.5, 0.5, 0.55))
 		return
 	_last_kind = kind
 	_health -= amount
 	if _health <= 0:
 		_die()
-	else:
-		_flash(Color(1, 1, 1))
+		return
+	_flash(Color(1, 1, 1))
+	if ai_enabled and _state != State.CHASE and _state != State.ATTACK:
+		_alert()                                # shooting it aggros it
 
 
 func _flash(c: Color) -> void:
@@ -67,11 +329,13 @@ func _flash(c: Color) -> void:
 
 
 func _die() -> void:
+	_alive = false
 	var pool := "drone_essence" if _last_kind == "spirit" else "drone_salvage"
 	Loot.spawn_drops(pool, global_position, rank)
 
-	set_deferred("collision_layer", 0)    # stop registering further hits
+	set_deferred("collision_layer", 0)
 	remove_from_group("spirit_targets")
+	remove_from_group("drones")
 	var tw := create_tween()
 	tw.set_parallel(true)
 	tw.tween_property(self, "scale", Vector3(0.01, 0.01, 0.01), 0.2)

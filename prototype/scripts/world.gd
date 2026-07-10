@@ -42,6 +42,7 @@ func _ready() -> void:
 	_build_spirit_demo(player)
 	_build_spirit_reveal_demo(player)
 	_build_loot_demo(player)
+	_build_combat_demo(player)
 
 	var hud: CanvasLayer = HudScript.new()
 	hud.player = player
@@ -185,14 +186,26 @@ func _build_portal_demo(player: CharacterBody3D) -> void:
 	_spawn_drone(Vector3(-13, 8.6, -7), "physical")
 
 
-## Spawn a drone target. `vuln` = "physical" | "spirit" | "both"; rank scales its loot.
-func _spawn_drone(pos: Vector3, vuln: String, rank := "junior") -> Node3D:
+## Spawn a drone. `vuln` = "physical" | "spirit" | "both"; rank scales its loot.
+## ai=true makes it patrol/chase/attack; archetype = "melee" | "ranged".
+func _spawn_drone(pos: Vector3, vuln: String, rank := "junior", ai := false, archetype := "melee") -> Node3D:
 	var drone: Node3D = DroneScript.new()
 	drone.vulnerable_to = vuln
 	drone.rank = rank
+	drone.ai_enabled = ai
+	drone.archetype = archetype
 	add_child(drone)
 	drone.global_position = pos
 	return drone
+
+
+# Combat — live AI drones between spawn and the southern rooms. They patrol until they
+# spot you (sight cone + line-of-sight), then chase and attack; shooting one aggros it.
+# Kill with the gun for salvage, the spirit blade for essence.
+func _build_combat_demo(player: CharacterBody3D) -> void:
+	_spawn_drone(Vector3(-3, 1.2, -4), "both", "junior", true, "melee")
+	_spawn_drone(Vector3(2, 1.2, -6), "both", "middle", true, "melee")
+	_spawn_drone(Vector3(-1, 1.2, -10), "both", "middle", true, "ranged")
 
 
 func _spawn_container(pos: Vector3, pool: String, rank: String, spirit: bool) -> Node3D:

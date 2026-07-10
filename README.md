@@ -44,6 +44,8 @@ See [`docs/MECHANICS.md`](docs/MECHANICS.md) for the full breakdown.
   art in [`docs/art/`](docs/art/); a shareable page renders in [`docs/art/art-bible.html`](docs/art/art-bible.html).
 - **[docs/LOOT.md](docs/LOOT.md)** — the BOTW-style drop system: weighted pools, rank
   escalation, and the twist where the *mechanic you kill with* transforms the loot.
+- **[docs/DRONES.md](docs/DRONES.md)** — enemy AI: perception (sight cone + line-of-sight),
+  patrol/chase/attack/search, melee & ranged archetypes, and the gravity asymmetry.
 
 A note on the cultural material: Quarry draws on Kabbalah and Merkavah mysticism as the
 *fiction* behind its powers. It is a respectful creative interpretation, **not** a
