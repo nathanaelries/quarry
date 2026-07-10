@@ -128,6 +128,11 @@ func _on_body_entered(body: Node) -> void:
 	if linked.has_method("start_cooldown"):
 		linked.start_cooldown()
 
+	Juice.play_3d("whoosh", global_position, -2.0)
+	Juice.play_3d("whoosh", linked.global_position, -5.0)
+	if body.has_method("add_shake"):
+		body.add_shake(0.22)
+
 
 func _on_area_entered(area: Area3D) -> void:
 	if linked == null:

@@ -65,15 +65,21 @@ func _on_body_entered(body: Node) -> void:
 	if body.has_method("take_hit"):
 		# A drone or a gravity switch.
 		body.take_hit(1, "physical")
-		queue_free()
+		_impact(Color(1.0, 0.85, 0.4))
 	elif body.is_in_group("player"):
 		if _arm > 0.0:
 			return                       # ignore the muzzle-overlap frame
 		if body.has_method("hit_self"):
 			body.hit_self()
-		queue_free()
+		_impact(Color(1.0, 0.5, 0.4))
 	else:
-		queue_free()                     # wall / floor / anything solid
+		_impact(Color(0.9, 0.8, 0.6))    # wall / floor / anything solid
+
+
+func _impact(color: Color) -> void:
+	Juice.play_3d("hit", global_position, -4.0)
+	Juice.spark(global_position, color)
+	queue_free()
 
 
 ## Called by a portal to carry the projectile through to its partner.
