@@ -29,6 +29,7 @@ func _ready() -> void:
 		"",
 		"WASD move · Mouse look · LMB fire / blade · RMB parry",
 		"Shift dash (physical) / descend (spirit) · Space jump / ascend",
+		"V camera (first-person ⇄ over-the-shoulder)",
 		"F spirit projection · E interact / trip lock · Esc mouse",
 	])
 	add_child(_controls)

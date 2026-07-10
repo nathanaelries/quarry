@@ -247,6 +247,7 @@ func _setup_input() -> void:
 		"dash": KEY_SHIFT,          # physical mode; descend is spirit-only, so no conflict
 		"spirit_toggle": KEY_F,
 		"interact": KEY_E,
+		"camera_toggle": KEY_V,     # first-person ⇄ over-the-shoulder
 	}
 	for action in binds:
 		if not InputMap.has_action(action):
