@@ -1,5 +1,5 @@
-extends "res://shrines/shrine_base.gd"
-## Quarry — Shrine 01: "The Reclamation".
+extends "res://chambers/chamber_base.gd"
+## Quarry — Chamber 01: "The Reclamation".
 ## Teaches spirit projection, then combines the mechanics on a linear escape.
 ## See docs/LEVEL_1.md. Content only — the base handles player/HUD/nav/win.
 
@@ -19,7 +19,7 @@ func intro_objective() -> String:
 	return "Escape the cell — press F to project your spirit through the door to the lock, then E"
 
 
-func build_shrine() -> void:
+func build_chamber() -> void:
 	_build_cell()
 	_build_corridor()
 	_build_gallery()

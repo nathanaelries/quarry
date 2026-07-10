@@ -1,8 +1,8 @@
-extends "res://shrines/shrine_base.gd"
-## Quarry — the Hub. A pedestal chamber where you choose a shrine to enter.
-## Reuses the shrine base (player/HUD/nav) but has no win gate; you leave by stepping
-## into a shrine gate. The Reclamation is open; the other three are sealed placeholders
-## for the four starter shrines (spirit / moves / parry / attacks+puzzles).
+extends "res://chambers/chamber_base.gd"
+## Quarry — the Hub. A pedestal chamber where you choose a chamber to enter.
+## Reuses the chamber base (player/HUD/nav) but has no win gate; you leave by stepping
+## into a chamber gate. The Reclamation is open; the other three are sealed placeholders
+## for the four starter chambers (spirit / moves / parry / attacks+puzzles).
 
 
 func get_spawn() -> Vector3:
@@ -10,10 +10,10 @@ func get_spawn() -> Vector3:
 
 
 func intro_objective() -> String:
-	return "The Cylinder's shrines — step into a glowing gate to enter one"
+	return "The Cylinder's chambers — step into a glowing gate to enter one"
 
 
-func build_shrine() -> void:
+func build_chamber() -> void:
 	_add_box(Vector3(0, -0.5, 0), Vector3(26, 1, 26), FLOOR)
 	_add_box(Vector3(0, 1.5, 13), Vector3(26, 3, 0.5), WALL)
 	_add_box(Vector3(0, 1.5, -13), Vector3(26, 3, 0.5), WALL)
@@ -82,10 +82,10 @@ func _enter(body: Node, id: String) -> void:
 	if not body.is_in_group("player"):
 		return
 	var g := get_parent()
-	if g and g.has_method("enter_shrine"):
-		g.enter_shrine(id)
+	if g and g.has_method("enter_chamber"):
+		g.enter_chamber(id)
 
 
 func _sealed(body: Node) -> void:
 	if body.is_in_group("player") and _hud:
-		_hud.set_objective("This shrine is sealed — coming soon")
+		_hud.set_objective("This chamber is sealed — coming soon")

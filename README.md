@@ -50,8 +50,8 @@ See [`docs/MECHANICS.md`](docs/MECHANICS.md) for the full breakdown.
   (deflect/reflect/stagger), telegraphed attacks, weapon, spirit blade, health.
 - **[docs/LEVEL_1.md](docs/LEVEL_1.md)** — "The Reclamation": the first real level — a linear
   escape (cell → corridor → gallery → cistern) with mechanic gates, paced combat, and a win.
-- **[docs/SHRINES.md](docs/SHRINES.md)** — the shrine framework: a reusable base + a hub +
-  a game shell, so each shrine (BOTW-style teaching level) is one small file to add.
+- **[docs/CHAMBERS.md](docs/CHAMBERS.md)** — the chamber framework: a reusable base + a hub +
+  a game shell, so each chamber (BOTW-style teaching level) is one small file to add.
 
 A note on the cultural material: Quarry draws on Kabbalah and Merkavah mysticism as the
 *fiction* behind its powers. It is a respectful creative interpretation, **not** a
@@ -63,9 +63,9 @@ consultants. See the "Cultural authenticity" section in `DESIGN.md`.
 ## The prototype
 
 [`prototype/`](prototype/) is a **Godot 4** vertical slice. You start in a **hub** and step
-into a shrine gate to play the first shrine, **"The Reclamation"** — a linear escape through
-a harvesting district of the Cylinder. Shrines are small, self-contained teaching levels; the
-[shrine framework](docs/SHRINES.md) makes each one a single file to add. Built almost entirely
+into a chamber gate to play the first chamber, **"The Reclamation"** — a linear escape through
+a harvesting district of the Cylinder. Chambers are small, self-contained teaching levels; the
+[chamber framework](docs/CHAMBERS.md) makes each one a single file to add. Built almost entirely
 in code, so it opens and runs with nothing to wire up by hand.
 
 The critical path — cell → corridor → gallery → cistern — introduces the mechanics one at a
@@ -115,16 +115,13 @@ quarry/
 ├─ README.md            ← you are here
 ├─ LICENSE              ← MIT
 ├─ .gitignore           ← ignores Godot's generated .godot/ cache & exports
-├─ docs/
-│  ├─ DESIGN.md         ← full game design document
-│  ├─ STORY.md          ← narrative, characters, factions
-│  └─ MECHANICS.md      ← the mechanic triad, in detail
+├─ docs/                ← DESIGN, STORY, MECHANICS, ART_BIBLE, LOOT, DRONES,
+│                          COMBAT, LEVEL_1, CHAMBERS (+ art/)
 └─ prototype/           ← Godot 4 vertical slice
    ├─ project.godot
-   ├─ README.md
-   ├─ icon.svg
-   ├─ scenes/main.tscn
-   └─ scripts/          ← player, portal, gravity, spirit, world, hud
+   ├─ scenes/main.tscn  ← boots scripts/game.gd (hub ↔ chambers)
+   ├─ chambers/         ← chamber_base · hub · chamber_reclamation
+   └─ scripts/          ← game shell + player, portal, gravity, spirit, drone, loot, juice, hud
 ```
 
 ## Status

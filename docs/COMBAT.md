@@ -52,12 +52,12 @@ where you leave it matters.
 
 ## What this unblocks
 
-The sealed hub pedestals **"Moves"** and **"Parry"** now have their verbs — the two shrines
-that teach them can be built (see [SHRINES.md](SHRINES.md)).
+The sealed hub pedestals **"Moves"** and **"Parry"** now have their verbs — the two chambers
+that teach them can be built (see [CHAMBERS.md](CHAMBERS.md)).
 
 ## Not yet (future)
 
-- A **combo/attack shrine** verb set may want a melee swing for the body (not just the gun),
+- A **combo/attack chamber** verb set may want a melee swing for the body (not just the gun),
   or charge/heavy attacks.
 - Parry could **build a resource** (a spirit charge) rather than only staggering.
 - Perfect-dodge (a dodge at the last instant) could trigger the same hit-stop reward as parry.

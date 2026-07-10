@@ -1,13 +1,13 @@
 extends Node3D
-## Quarry — base class for a shrine (and the hub).
+## Quarry — base class for a chamber (and the hub).
 ##
-## A shrine is a small, self-contained teaching level. Subclass this and override:
+## A chamber is a small, self-contained teaching level. Subclass this and override:
 ##   • get_spawn()        → where the player starts
 ##   • intro_objective()  → the first HUD objective line
-##   • build_shrine()     → lay out the content (use the helpers below)
+##   • build_chamber()     → lay out the content (use the helpers below)
 ## The base handles the player, HUD, input, lighting, navmesh bake, objectives, and the
 ## win → completion flow. Add a win gate with _build_win_gate(); stepping into it completes
-## the shrine and returns to the hub.
+## the chamber and returns to the hub.
 
 const PlayerScript := preload("res://scripts/player.gd")
 const HudScript := preload("res://scripts/hud.gd")
@@ -22,7 +22,7 @@ const GREEN := Color(0.55, 0.85, 0.45)
 const GOLD := Color(1.0, 0.86, 0.5)
 
 var player: CharacterBody3D
-var shrine_id := ""
+var chamber_id := ""
 
 var _hud: CanvasLayer
 var _won := false
@@ -39,7 +39,7 @@ func _ready() -> void:
 	player.global_position = spawn
 	player.spawn_point = spawn
 
-	build_shrine()
+	build_chamber()
 	_build_navigation()
 
 	_hud = HudScript.new()
@@ -57,7 +57,7 @@ func intro_objective() -> String:
 	return ""
 
 
-func build_shrine() -> void:
+func build_chamber() -> void:
 	pass
 
 
@@ -108,8 +108,8 @@ func _complete() -> void:
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 	await get_tree().create_timer(3.5).timeout
 	var game := get_parent()
-	if game and game.has_method("complete_shrine"):
-		game.complete_shrine(shrine_id)
+	if game and game.has_method("complete_chamber"):
+		game.complete_chamber(chamber_id)
 
 
 # ---- Objectives -----------------------------------------------------------
