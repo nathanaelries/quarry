@@ -34,6 +34,8 @@ const RANGED_RANGE := 11.0
 const ATTACK_CD := 1.3
 const MELEE_DAMAGE := 1
 const SEARCH_TIME := 4.0
+const WINDUP := 0.4                   # telegraph before an attack — the window to parry it
+const STUN_TIME := 1.3                # a parried drone is staggered this long
 const PATROL_RADIUS := 5.0
 const TURN_RATE := 7.0
 
@@ -49,6 +51,8 @@ var _home := Vector3.ZERO
 var _home_set := false
 var _player: Node3D
 var _atk_cd := 0.0
+var _windup_t := 0.0
+var _stun_t := 0.0
 var _search_t := 0.0
 var _last_seen := Vector3.ZERO
 var _patrol_target := Vector3.ZERO
@@ -144,11 +148,14 @@ func _physics_process(delta: float) -> void:
 		velocity.y -= GRAVITY * delta
 
 	_desired = Vector3.ZERO
-	match _state:
-		State.PATROL: _do_patrol(delta)
-		State.CHASE: _do_chase(delta)
-		State.ATTACK: _do_attack(delta)
-		State.SEARCH: _do_search(delta)
+	if _stun_t > 0.0:
+		_stun_t -= delta                    # staggered — hold still, don't act
+	else:
+		match _state:
+			State.PATROL: _do_patrol(delta)
+			State.CHASE: _do_chase(delta)
+			State.ATTACK: _do_attack(delta)
+			State.SEARCH: _do_search(delta)
 
 	# Hand the wanted velocity to the avoidance sim; it answers on velocity_computed.
 	_agent.set_velocity(_desired)
@@ -188,12 +195,14 @@ func _do_chase(delta: float) -> void:
 
 func _do_attack(delta: float) -> void:
 	if not _can_see_player():
+		_windup_t = 0.0
 		_state = State.SEARCH
 		_search_t = SEARCH_TIME
 		return
 	var dist := global_position.distance_to(_player.global_position)
 	var reach := MELEE_RANGE if archetype == "melee" else RANGED_RANGE
 	if dist > reach * 1.15:
+		_windup_t = 0.0
 		_state = State.CHASE
 		return
 	# ranged backpedals if you close in; otherwise hold ground (RVO still spaces them)
@@ -202,9 +211,17 @@ func _do_attack(delta: float) -> void:
 	else:
 		_desired = Vector3.ZERO
 	_face(_player.global_position, delta)      # always face the player while attacking
-	if _atk_cd <= 0.0:
-		_attack(dist)
-		_atk_cd = ATTACK_CD
+	# Telegraph, then strike — the wind-up is your window to parry.
+	if _windup_t > 0.0:
+		_windup_t -= delta
+		if _windup_t <= 0.0:
+			_attack(dist)
+			_atk_cd = ATTACK_CD
+			_eye_mat.emission = Color(1.0, 0.25, 0.2)
+	elif _atk_cd <= 0.0:
+		_windup_t = WINDUP
+		_eye_mat.emission = Color(1.6, 0.7, 0.2)   # bright wind-up tell
+		Juice.play_3d("drone_alert", global_position, -11.0)
 
 
 func _do_search(delta: float) -> void:
@@ -288,6 +305,11 @@ func _attack(dist: float) -> void:
 
 
 func _melee() -> void:
+	if _player and _player.has_method("is_parrying") and _player.is_parrying():
+		if _player.has_method("on_parry_success"):
+			_player.on_parry_success()
+		stagger()                                # parried → staggered, wide open
+		return
 	if _player and _player.has_method("take_damage"):
 		_player.take_damage(MELEE_DAMAGE)
 	Juice.play_3d("drone_shot", global_position, -3.0)
@@ -309,6 +331,15 @@ func _fire_bolt() -> void:
 # ---------------------------------------------------------------------------
 # Damage / death / loot
 # ---------------------------------------------------------------------------
+## Parried — reel back, drop the attack, and sit open for a beat.
+func stagger() -> void:
+	_stun_t = STUN_TIME
+	_windup_t = 0.0
+	_atk_cd = maxf(_atk_cd, 0.8)
+	_flash(Color(0.5, 0.75, 1.0))
+	_eye_mat.emission = Color(0.4, 0.6, 1.0)
+
+
 func take_hit(amount: int, kind: String) -> void:
 	if vulnerable_to != "both" and kind != vulnerable_to:
 		_flash(Color(0.5, 0.5, 0.55))

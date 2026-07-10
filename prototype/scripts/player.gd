@@ -31,6 +31,11 @@ const SHAKE_MAX := 0.16            # camera-shake max offset (metres)
 const SHAKE_DECAY := 3.2
 const STEP_INTERVAL := 0.42        # seconds between footstep sfx while moving
 const MAX_HEALTH := 5              # hits before the death-walk
+const DASH_SPEED := 20.0           # dash burst; i-frames last the dash
+const DASH_TIME := 0.16
+const DASH_CD := 0.7
+const PARRY_WINDOW := 0.24         # timing window a parry stays open
+const PARRY_CD := 0.5
 
 # ---- State ----------------------------------------------------------------
 var current_up := Vector3.UP
@@ -45,6 +50,11 @@ var is_dead := false
 var health := MAX_HEALTH
 var _trauma := 0.0                   # camera shake, decays each frame
 var _step_t := 0.0
+var _dash_t := 0.0                   # >0 = mid-dash (i-frames)
+var _dash_cd := 0.0
+var _dash_dir := Vector3.ZERO
+var _parry_t := 0.0                  # >0 = parry window open
+var _parry_cd := 0.0
 
 # ---- Nodes (built at runtime) --------------------------------------------
 var head: Node3D                    # yaw on the body, pitch on the head
@@ -59,6 +69,7 @@ signal spirit_time_changed(fraction: float)
 signal died()
 signal resurrected()
 signal damaged(fraction: float)
+signal parried()
 signal picked_up(text: String, color: Color, rarity: String)
 
 var inventory := {}                 # item id -> count
@@ -157,6 +168,14 @@ func _unhandled_input(event: InputEvent) -> void:
 		elif not is_dead:
 			_fire()
 
+	# Right click: parry (physical only).
+	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_RIGHT:
+		if not is_dead and not in_spirit and Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
+			_parry()
+
+	if event.is_action_pressed("dash") and not in_spirit and not is_dead:
+		_dash()
+
 	if event.is_action_pressed("ui_cancel"):
 		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 
@@ -189,6 +208,9 @@ func _physics_process(delta: float) -> void:
 		return
 
 	_reorient(delta)
+	_dash_cd = maxf(0.0, _dash_cd - delta)
+	_parry_cd = maxf(0.0, _parry_cd - delta)
+	_parry_t = maxf(0.0, _parry_t - delta)
 
 	# Gravity + jump along the current up axis.
 	if not is_on_floor():
@@ -199,13 +221,17 @@ func _physics_process(delta: float) -> void:
 			Juice.play_2d("jump", -3.0)
 			add_shake(0.06)
 
-	# Movement in the plane perpendicular to "up".
-	var input := Input.get_vector("move_left", "move_right", "move_forward", "move_back")
-	var dir := (transform.basis.x * input.x + transform.basis.z * input.y)
-	if dir.length() > 0.001:
-		dir = dir.normalized()
+	# Movement in the plane perpendicular to "up" — a dash overrides it.
 	var along_up := velocity.project(current_up)
-	velocity = dir * SPEED + along_up
+	if _dash_t > 0.0:
+		_dash_t -= delta
+		velocity = _dash_dir * DASH_SPEED + along_up
+	else:
+		var input := Input.get_vector("move_left", "move_right", "move_forward", "move_back")
+		var dir := (transform.basis.x * input.x + transform.basis.z * input.y)
+		if dir.length() > 0.001:
+			dir = dir.normalized()
+		velocity = dir * SPEED + along_up
 
 	up_direction = current_up
 	move_and_slide()
@@ -403,7 +429,7 @@ func _slash() -> void:
 # ---------------------------------------------------------------------------
 ## Taken a hit from a drone.
 func take_damage(amount: int) -> void:
-	if is_dead:
+	if is_dead or _dash_t > 0.0:      # dash grants i-frames
 		return
 	health = maxi(0, health - amount)
 	add_shake(0.28)
@@ -416,6 +442,46 @@ func take_damage(amount: int) -> void:
 ## Shot yourself through a portal. Same consequence as any death: you come back.
 func hit_self() -> void:
 	die()
+
+
+# ---------------------------------------------------------------------------
+# Dash & parry
+# ---------------------------------------------------------------------------
+func is_parrying() -> bool:
+	return _parry_t > 0.0
+
+
+func _dash() -> void:
+	if _dash_cd > 0.0 or _dash_t > 0.0:
+		return
+	var input := Input.get_vector("move_left", "move_right", "move_forward", "move_back")
+	var d := transform.basis.x * input.x + transform.basis.z * input.y
+	if d.length() < 0.1:
+		d = -transform.basis.z                    # no input → dash forward
+	d = d - d.project(current_up)                 # keep it on the movement plane
+	if d.length() < 0.01:
+		return
+	_dash_dir = d.normalized()
+	_dash_t = DASH_TIME
+	_dash_cd = DASH_CD
+	Juice.play_2d("dash", -4.0)
+	add_shake(0.1)
+
+
+func _parry() -> void:
+	if _parry_cd > 0.0:
+		return
+	_parry_t = PARRY_WINDOW
+	_parry_cd = PARRY_CD
+
+
+## An attacker's hit landed inside the parry window (called by drones / bolts).
+func on_parry_success() -> void:
+	_parry_t = 0.0                                 # consume the window
+	Juice.play_2d("parry", 0.0)
+	Juice.hitstop(0.32, 0.1)
+	add_shake(0.14)
+	parried.emit()
 
 
 func die() -> void:
@@ -442,6 +508,8 @@ func _resurrect() -> void:
 	global_position = spawn_point
 	up_direction = current_up
 	health = MAX_HEALTH
+	_dash_t = 0.0
+	_parry_t = 0.0
 	is_dead = false
 	damaged.emit(1.0)
 	resurrected.emit()

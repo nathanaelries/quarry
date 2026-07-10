@@ -46,6 +46,8 @@ See [`docs/MECHANICS.md`](docs/MECHANICS.md) for the full breakdown.
   escalation, and the twist where the *mechanic you kill with* transforms the loot.
 - **[docs/DRONES.md](docs/DRONES.md)** — enemy AI: perception (sight cone + line-of-sight),
   patrol/chase/attack/search, melee & ranged archetypes, and the gravity asymmetry.
+- **[docs/COMBAT.md](docs/COMBAT.md)** — the combat/movement verbs: dash (i-frames), parry
+  (deflect/reflect/stagger), telegraphed attacks, weapon, spirit blade, health.
 - **[docs/LEVEL_1.md](docs/LEVEL_1.md)** — "The Reclamation": the first real level — a linear
   escape (cell → corridor → gallery → cistern) with mechanic gates, paced combat, and a win.
 - **[docs/SHRINES.md](docs/SHRINES.md)** — the shrine framework: a reusable base + a hub +

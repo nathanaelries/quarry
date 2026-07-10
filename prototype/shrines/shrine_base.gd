@@ -244,6 +244,7 @@ func _setup_input() -> void:
 		"move_right": KEY_D,
 		"jump": KEY_SPACE,
 		"descend": KEY_SHIFT,
+		"dash": KEY_SHIFT,          # physical mode; descend is spirit-only, so no conflict
 		"spirit_toggle": KEY_F,
 		"interact": KEY_E,
 	}

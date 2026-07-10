@@ -72,6 +72,18 @@ func spark(pos: Vector3, color: Color) -> void:
 	tw.chain().tween_callback(m.queue_free)
 
 
+## Brief time dilation for impact (a parry, say). Real-time restore so it can't stick.
+var _hitstopping := false
+func hitstop(scale: float, dur: float) -> void:
+	if _hitstopping:
+		return
+	_hitstopping = true
+	Engine.time_scale = scale
+	await get_tree().create_timer(dur, true, false, true).timeout
+	Engine.time_scale = 1.0
+	_hitstopping = false
+
+
 ## Toggle the ethereal lowpass + reverb on the whole mix (spirit projection).
 func set_spirit(on: bool) -> void:
 	if _lp_idx < 0:
@@ -116,6 +128,8 @@ func _build_library() -> void:
 	_lib["drone_alert"] = _wav(_tone(0.28, 480, 900, 0.05, 0.02, 1.4, 0.5))
 	_lib["drone_shot"] = _wav(_tone(0.12, 900, 300, 0.3, 0.003, 2.4, 0.7))
 	_lib["hurt"] = _wav(_mix(_tone(0.22, 190, 70, 0.55, 0.002, 2.0, 0.9), _tone(0.22, 95, 50, 0.0, 0.002, 1.8, 0.5)))
+	_lib["dash"] = _wav(_tone(0.18, 620, 220, 0.5, 0.008, 1.6, 0.6))
+	_lib["parry"] = _wav(_mix(_tone(0.15, 1500, 720, 0.18, 0.002, 2.6, 0.7), _tone(0.15, 2200, 1050, 0.08, 0.002, 2.6, 0.4)))
 
 
 func _wav(samples: PackedFloat32Array) -> AudioStreamWAV:

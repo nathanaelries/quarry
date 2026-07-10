@@ -14,6 +14,7 @@ var _inv: Label
 var _toast_y := 560.0
 var _pips: Array = []
 var _dmg_flash: ColorRect
+var _parry_fx: ColorRect
 var _objective: Label
 var _win_bg: ColorRect
 var _win_text: Label
@@ -26,8 +27,8 @@ func _ready() -> void:
 	_controls.text = "\n".join([
 		"QUARRY — The Reclamation",
 		"",
-		"WASD move · Mouse look · LMB fire / spirit blade",
-		"Space jump / ascend · Shift descend (spirit)",
+		"WASD move · Mouse look · LMB fire / blade · RMB parry",
+		"Shift dash (physical) / descend (spirit) · Space jump / ascend",
 		"F spirit projection · E interact / trip lock · Esc mouse",
 	])
 	add_child(_controls)
@@ -65,6 +66,7 @@ func _ready() -> void:
 		player.resurrected.connect(_on_resurrected)
 		player.picked_up.connect(_on_picked_up)
 		player.damaged.connect(_on_damaged)
+		player.parried.connect(_on_parried)
 	_on_mode_changed(false)
 	_on_spirit_time(0.0)
 	_refresh_inventory()
@@ -117,6 +119,13 @@ func _build_health() -> void:
 	_dmg_flash.anchor_bottom = 1.0
 	_dmg_flash.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(_dmg_flash)
+
+	_parry_fx = ColorRect.new()
+	_parry_fx.color = Color(1.0, 0.85, 0.4, 0.0)
+	_parry_fx.anchor_right = 1.0
+	_parry_fx.anchor_bottom = 1.0
+	_parry_fx.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(_parry_fx)
 
 
 func _build_objective() -> void:
@@ -201,6 +210,13 @@ func _on_damaged(fraction: float) -> void:
 		_dmg_flash.color.a = 0.34
 		var tw := create_tween()
 		tw.tween_property(_dmg_flash, "color:a", 0.0, 0.3)
+
+
+func _on_parried() -> void:
+	if _parry_fx:
+		_parry_fx.color.a = 0.42
+		var tw := create_tween()
+		tw.tween_property(_parry_fx, "color:a", 0.0, 0.35)
 
 
 func _on_picked_up(text: String, color: Color, rarity: String) -> void:

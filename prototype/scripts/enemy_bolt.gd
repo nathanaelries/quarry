@@ -8,6 +8,8 @@ var speed := 18.0
 var damage := 1
 
 var _life := 4.0
+var _reflected := false
+var _mat: StandardMaterial3D
 
 
 func _ready() -> void:
@@ -18,12 +20,12 @@ func _ready() -> void:
 	s.radius = 0.14
 	s.height = 0.28
 	mesh.mesh = s
-	var mat := StandardMaterial3D.new()
-	mat.albedo_color = Color(0.95, 0.35, 0.4)
-	mat.emission_enabled = true
-	mat.emission = Color(1.0, 0.25, 0.3)
-	mat.emission_energy_multiplier = 3.0
-	mesh.material_override = mat
+	_mat = StandardMaterial3D.new()
+	_mat.albedo_color = Color(0.95, 0.35, 0.4)
+	_mat.emission_enabled = true
+	_mat.emission = Color(1.0, 0.25, 0.3)
+	_mat.emission_energy_multiplier = 3.0
+	mesh.material_override = _mat
 	add_child(mesh)
 
 	var light := OmniLight3D.new()
@@ -54,11 +56,35 @@ func _physics_process(delta: float) -> void:
 	global_position += velocity * delta
 
 
+func reflect() -> void:
+	velocity = -velocity * 1.4                    # send it back, faster
+	_reflected = true
+	_mat.albedo_color = Color(0.5, 0.9, 1.0)      # now friendly
+	_mat.emission = Color(0.45, 0.85, 1.0)
+
+
 func _on_body_entered(body: Node) -> void:
 	if body.is_in_group("drones"):
-		return                                   # don't hit fellow drones
-	if body.is_in_group("player") and body.has_method("take_damage"):
-		body.take_damage(damage)
+		if _reflected and body.has_method("take_hit"):
+			body.take_hit(2, "physical")          # a parried bolt bites the drones
+			_impact(Color(0.5, 0.9, 1.0))
+		return                                    # otherwise pass over allies
+	if body.is_in_group("player"):
+		if _reflected:
+			return                                # your own reflected bolt won't hit you
+		if body.has_method("is_parrying") and body.is_parrying():
+			if body.has_method("on_parry_success"):
+				body.on_parry_success()
+			reflect()
+			return
+		if body.has_method("take_damage"):
+			body.take_damage(damage)
+		_impact(Color(1.0, 0.35, 0.4))
+		return
+	_impact(Color(1.0, 0.35, 0.4))                # wall / floor
+
+
+func _impact(color: Color) -> void:
 	Juice.play_3d("hit", global_position, -6.0)
-	Juice.spark(global_position, Color(1.0, 0.35, 0.4))
+	Juice.spark(global_position, color)
 	queue_free()
