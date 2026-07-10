@@ -1,0 +1,27 @@
+# Godot 4 ----------------------------------------------------------------
+# The engine regenerates this import/cache folder; never commit it.
+prototype/.godot/
+prototype/.import/
+
+# Exported builds
+prototype/export/
+prototype/build/
+*.import
+
+# Godot may write these
+prototype/android/
+prototype/*.translation
+
+# OS / editor cruft ------------------------------------------------------
+.DS_Store
+Thumbs.db
+desktop.ini
+*.swp
+*~
+.vscode/
+.idea/
+
+# Secrets (belt-and-suspenders — this repo ships none) -------------------
+.env
+.env.*
+!.env.example
