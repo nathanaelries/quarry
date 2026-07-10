@@ -46,6 +46,8 @@ See [`docs/MECHANICS.md`](docs/MECHANICS.md) for the full breakdown.
   escalation, and the twist where the *mechanic you kill with* transforms the loot.
 - **[docs/DRONES.md](docs/DRONES.md)** — enemy AI: perception (sight cone + line-of-sight),
   patrol/chase/attack/search, melee & ranged archetypes, and the gravity asymmetry.
+- **[docs/LEVEL_1.md](docs/LEVEL_1.md)** — "The Reclamation": the first real level — a linear
+  escape (cell → corridor → gallery → cistern) with mechanic gates, paced combat, and a win.
 
 A note on the cultural material: Quarry draws on Kabbalah and Merkavah mysticism as the
 *fiction* behind its powers. It is a respectful creative interpretation, **not** a
@@ -56,19 +58,23 @@ consultants. See the "Cultural authenticity" section in `DESIGN.md`.
 
 ## The prototype
 
-[`prototype/`](prototype/) is a small **Godot 4** vertical slice that makes the three
-mechanics real and playable in one sandbox room. It is built almost entirely in code so
-it opens and runs with nothing to wire up by hand.
+[`prototype/`](prototype/) is a **Godot 4** vertical slice — now a real first level,
+**"The Reclamation"**: a linear escape through a harvesting district of the Cylinder. Built
+almost entirely in code, so it opens and runs with nothing to wire up by hand.
 
-What it demonstrates:
+The critical path — cell → corridor → gallery → cistern — introduces the mechanics one at a
+time and combines them, gated so it's always completable ([docs/LEVEL_1.md](docs/LEVEL_1.md)):
 
-- **First-person controller with re-orientable gravity** — your "down" follows the field
-  you're standing in.
-- **A planetoid with radial gravity** — walk all the way around it.
-- **Merkavah spirit projection** — press **F** to leave your body, free-fly to scout, and
-  trip a spirit-only lock that opens a sealed door.
-- **A portal pair** — walk into one, come out the other, reaching a ledge you otherwise
-  couldn't.
+- **Awakening Cell** — project your spirit (**F**) through the sealed door to a lock and trip
+  it (**E**): the spirit reaches what the body can't.
+- **Rib Corridor** — first combat (**LMB**) and loot; drones patrol, spot you, and chase.
+- **Sunken Gallery** — a firefight (a sniper on a ledge), an optional gravity-path climb, and
+  a **portal** that folds you to the Cistern.
+- **Cistern Gate** — the final reclamation (a senior drone + support), an optional planetoid
+  and gravity-switch vault, then the glowing **Ascension Gate** — step in to escape.
+
+Under it: re-orientable gravity, Merkavah spirit projection + blade, portals (walk/look/shoot),
+a weapon, BOTW-style loot, drone AI with navmesh + RVO, player health, and resurrection.
 
 ### Run it
 

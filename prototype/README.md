@@ -1,7 +1,7 @@
 # Quarry — prototype (Godot 4)
 
-A single-room vertical slice that makes the three signature mechanics real and playable.
-It is built entirely in code, so there is nothing to wire up: open and press Play.
+A **playable first level — "The Reclamation"** — that puts the mechanics to work in a
+designed space. Built entirely in code, so there is nothing to wire up: open and press Play.
 
 ## Run
 
@@ -26,28 +26,22 @@ It is built entirely in code, so there is nothing to wire up: open and press Pla
 | **E** | Trip a spirit lock (while in spirit form) |
 | **Esc** | Release mouse · click to re-capture |
 
-## What to try
+## The level — "The Reclamation"
 
-Everything in the mechanic triad is now live in one arena:
+A linear escape; the HUD shows your current objective. Full design: [`../docs/LEVEL_1.md`](../docs/LEVEL_1.md).
 
-- **Planetoid gravity** — walk east onto the **orange planetoid** and keep going: you circle
-  it upside-down under its own (moon-light) field. One good jump launches you off.
-- **Gravity path** — north, a **green lit strip** on a wall: step onto it and walk straight
-  *up* the wall to the ledge. Step off and you fall.
-- **Gravity switch** — the room to the south-east: **shoot the yellow switch** and the room's
-  gravity flips — you fall up to the ceiling, where the prize waits. Shoot it again to drop.
-- **Portals (look / step / shoot)** — the **cyan rings** to the west. *Look* into one to see
-  the far side rendered live; *step* through to reach the high ledge; *shoot* straight
-  through to tag the drone floating past the exit. Bad angle = you might hit yourself.
-- **Merkavah — spirit lock** — the sealed room (purple door, south). **F** to leave your
-  body, fly the spirit through the wall to the **purple crystal**, **E** to trip it; the door
-  opens for your body. Watch the meter — empty and you snap home. You also can't drift past
-  the tether.
-- **Merkavah — reveal + blade** — the platforms to the west, split by a gap. **F**, fly the
-  spirit across to reveal the hidden **bridge**, and **LMB** to slash the purple spirit-only
-  drone. Return, cross the now-solid bridge in the flesh.
-- **Resurrection** — fall off the world, or shoot yourself through a portal: a brief
-  death-walk, then you return to spawn.
+1. **Awakening Cell** — the door won't open from here. Press **F** to project your spirit
+   through it to the lock beyond, get close, and press **E** — the door slides away.
+2. **Rib Corridor** — two drones patrol. **LMB** to fire; break the crate for loot. Kill with
+   the gun for salvage or the spirit blade (**F** then **LMB**) for essence.
+3. **Sunken Gallery** — a firefight with a sniper on a ledge. *Optional:* ride the green
+   **gravity path** up the west wall to a reliquary. The **portal** at the south folds you on.
+4. **Cistern Gate** — the final reclamation (a big **senior** drone + support). *Optional:*
+   circle the **planetoid** or shoot the **gravity switch** in the side vault for caches.
+   Step into the glowing **Ascension Gate** to escape.
+
+If you die (drone hits, or shooting yourself through a portal), you death-walk and resurrect
+at the cell — health is the 5 pips up top.
 
 ## Files
 

@@ -14,6 +14,9 @@ var _inv: Label
 var _toast_y := 560.0
 var _pips: Array = []
 var _dmg_flash: ColorRect
+var _objective: Label
+var _win_bg: ColorRect
+var _win_text: Label
 const HEALTH_PIPS := 5
 
 
@@ -21,22 +24,11 @@ func _ready() -> void:
 	_controls = _make_label()
 	_controls.position = Vector2(16, 12)
 	_controls.text = "\n".join([
-		"QUARRY — prototype",
+		"QUARRY — The Reclamation",
 		"",
-		"WASD move · Mouse look · LMB fire/blade",
-		"Space jump/ascend · Shift descend (spirit)",
-		"F spirit projection · E trip lock · Esc mouse",
-		"",
-		"Around the arena:",
-		"· ahead — drone range + crates: shoot for salvage,",
-		"          spirit-blade for essence (rank = bigger haul)",
-		"· S   live drones patrol — they spot you, chase & attack",
-		"· E   orange planetoid — walk around it",
-		"· N   green strip — walk up the wall",
-		"· W   cyan portals — look / step / shoot through",
-		"· SE  room — shoot the switch, fall to the ceiling",
-		"· S   sealed room — spirit to the purple crystal",
-		"· W   platforms — spirit reveals the bridge, slash the drone",
+		"WASD move · Mouse look · LMB fire / spirit blade",
+		"Space jump / ascend · Shift descend (spirit)",
+		"F spirit projection · E interact / trip lock · Esc mouse",
 	])
 	add_child(_controls)
 
@@ -60,6 +52,7 @@ func _ready() -> void:
 	_build_crosshair()
 	_build_death_overlay()
 	_build_health()
+	_build_objective()
 
 	_inv = _make_label()
 	_inv.position = Vector2(16, 402)
@@ -124,6 +117,47 @@ func _build_health() -> void:
 	_dmg_flash.anchor_bottom = 1.0
 	_dmg_flash.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(_dmg_flash)
+
+
+func _build_objective() -> void:
+	var vp := get_viewport().get_visible_rect().size
+	_objective = _make_label()
+	_objective.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_objective.add_theme_font_size_override("font_size", 18)
+	_objective.size = Vector2(780, 26)
+	_objective.position = Vector2(vp.x * 0.5 - 390, 52)
+	add_child(_objective)
+
+
+## Update the running objective line.
+func set_objective(text: String) -> void:
+	if _objective:
+		_objective.text = "◈  " + text
+
+
+## Show the level-complete banner and dim the world.
+func level_complete() -> void:
+	if _win_bg == null:
+		var vp := get_viewport().get_visible_rect().size
+		_win_bg = ColorRect.new()
+		_win_bg.color = Color(0.04, 0.03, 0.0, 0.0)
+		_win_bg.anchor_right = 1.0
+		_win_bg.anchor_bottom = 1.0
+		_win_bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		add_child(_win_bg)
+
+		_win_text = Label.new()
+		_win_text.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		_win_text.add_theme_color_override("font_color", Color(1.0, 0.88, 0.55))
+		_win_text.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.85))
+		_win_text.add_theme_constant_override("outline_size", 6)
+		_win_text.add_theme_font_size_override("font_size", 40)
+		_win_text.text = "THE RECLAMATION — ESCAPED"
+		_win_text.size = Vector2(vp.x, 120)
+		_win_text.position = Vector2(0, vp.y * 0.5 - 60)
+		add_child(_win_text)
+	var tw := create_tween()
+	tw.tween_property(_win_bg, "color:a", 0.72, 1.0)
 
 
 func _make_label() -> Label:
