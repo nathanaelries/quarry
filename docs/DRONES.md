@@ -70,10 +70,14 @@ toward its goal. So a chaser **routes around walls, the firing-range plinth, and
 instead of getting stuck on them. The bake is synchronous at load; agents idle for the frame
 it takes the navigation map to sync, then move.
 
+**RVO avoidance** is on, so chasers don't stack up when they converge on you. Each drone
+feeds the agent a *desired* velocity via `set_velocity()`; the avoidance sim answers on
+`velocity_computed` with a collision-free "safe" velocity, which drives `move_and_slide`
+(gravity kept separate). Three drones spawned overlapping settle to ~2·radius apart instead
+of piling onto one spot. The player isn't an avoidance agent, so they still close in on you.
+
 ## Known limits (future work)
 
-- **No inter-agent avoidance (RVO).** Agents share a navmesh but can overlap when they
-  converge on you; enabling `NavigationAgent3D` avoidance is a drop-in next step.
 - Multi-floor / re-orientable-gravity navigation: the navmesh is the flat arena. Drones are
   ground units and don't path on walls/ceilings or the planetoid.
 - No group/alert propagation (one drone spotting you doesn't call the others), no cover use,

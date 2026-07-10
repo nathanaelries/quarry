@@ -54,6 +54,7 @@ var _last_seen := Vector3.ZERO
 var _patrol_target := Vector3.ZERO
 var _repath_t := 0.0
 var _agent: NavigationAgent3D
+var _desired := Vector3.ZERO         # horizontal velocity we WANT; RVO returns a safe one
 
 var _mat: StandardMaterial3D
 var _eye_mat: StandardMaterial3D
@@ -106,12 +107,20 @@ func _ready() -> void:
 	if ai_enabled:
 		_state = State.PATROL
 		_agent = NavigationAgent3D.new()
-		_agent.radius = 0.5
+		_agent.radius = 0.6
 		_agent.height = 1.4
 		_agent.path_desired_distance = 0.6
 		_agent.target_desired_distance = 0.8
 		_agent.path_max_distance = 4.0
+		# RVO avoidance so chasers don't stack up when they converge on the player.
+		_agent.avoidance_enabled = true
+		_agent.max_speed = _speed
+		_agent.neighbor_distance = 4.0
+		_agent.max_neighbors = 8
+		_agent.time_horizon_agents = 1.2
+		_agent.time_horizon_obstacles = 0.5
 		add_child(_agent)
+		_agent.velocity_computed.connect(_on_velocity_computed)
 
 
 # ---------------------------------------------------------------------------
@@ -134,12 +143,23 @@ func _physics_process(delta: float) -> void:
 	else:
 		velocity.y -= GRAVITY * delta
 
+	_desired = Vector3.ZERO
 	match _state:
 		State.PATROL: _do_patrol(delta)
 		State.CHASE: _do_chase(delta)
 		State.ATTACK: _do_attack(delta)
 		State.SEARCH: _do_search(delta)
 
+	# Hand the wanted velocity to the avoidance sim; it answers on velocity_computed.
+	_agent.set_velocity(_desired)
+
+
+## RVO answer: the avoidance-adjusted velocity. Apply it (keeping gravity) and move.
+func _on_velocity_computed(safe: Vector3) -> void:
+	if not _alive:
+		return
+	velocity.x = safe.x
+	velocity.z = safe.z
 	move_and_slide()
 
 
@@ -171,18 +191,17 @@ func _do_attack(delta: float) -> void:
 		_state = State.SEARCH
 		_search_t = SEARCH_TIME
 		return
-	_face(_player.global_position, delta)
 	var dist := global_position.distance_to(_player.global_position)
 	var reach := MELEE_RANGE if archetype == "melee" else RANGED_RANGE
 	if dist > reach * 1.15:
 		_state = State.CHASE
 		return
-	# hold ground (ranged keeps distance a touch)
+	# ranged backpedals if you close in; otherwise hold ground (RVO still spaces them)
 	if archetype == "ranged" and dist < RANGED_RANGE * 0.55:
 		_move_toward(global_position * 2.0 - _player.global_position, _speed * 0.8, delta)
 	else:
-		velocity.x = move_toward(velocity.x, 0.0, _speed * 8.0 * delta)
-		velocity.z = move_toward(velocity.z, 0.0, _speed * 8.0 * delta)
+		_desired = Vector3.ZERO
+	_face(_player.global_position, delta)      # always face the player while attacking
 	if _atk_cd <= 0.0:
 		_attack(dist)
 		_atk_cd = ATTACK_CD
@@ -231,12 +250,10 @@ func _move_toward(target: Vector3, speed: float, delta: float) -> void:
 	dir.y = 0.0
 	if dir.length() > 0.2:
 		dir = dir.normalized()
-		velocity.x = dir.x * speed
-		velocity.z = dir.z * speed
+		_desired = dir * speed
 		_face(global_position + dir, delta)
 	else:
-		velocity.x = 0.0
-		velocity.z = 0.0
+		_desired = Vector3.ZERO
 
 
 func _face(target: Vector3, delta: float) -> void:
@@ -274,11 +291,7 @@ func _melee() -> void:
 	if _player and _player.has_method("take_damage"):
 		_player.take_damage(MELEE_DAMAGE)
 	Juice.play_3d("drone_shot", global_position, -3.0)
-	# lunge punch
-	var to := (_player.global_position - global_position)
-	to.y = 0.0
-	if to.length() > 0.05:
-		velocity += to.normalized() * 6.0
+	# lunge punch (visual — velocity is owned by the avoidance callback now)
 	var tw := create_tween()
 	tw.tween_property(self, "scale", Vector3(1.25, 0.8, 1.25), 0.08)
 	tw.tween_property(self, "scale", Vector3.ONE, 0.12)
