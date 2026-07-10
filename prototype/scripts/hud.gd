@@ -8,6 +8,8 @@ var _controls: Label
 var _status: Label
 var _meter_bg: ColorRect
 var _meter_fill: ColorRect
+var _death_bg: ColorRect
+var _death_text: Label
 
 
 func _ready() -> void:
@@ -16,15 +18,17 @@ func _ready() -> void:
 	_controls.text = "\n".join([
 		"QUARRY — prototype",
 		"",
-		"WASD  move        Mouse  look",
-		"Space jump/ascend Shift  descend (spirit)",
-		"F     spirit projection (Merkavah)",
-		"E     trip spirit lock (in spirit form)",
-		"Esc   free mouse  ·  click to recapture",
+		"WASD move · Mouse look · LMB fire/blade",
+		"Space jump/ascend · Shift descend (spirit)",
+		"F spirit projection · E trip lock · Esc mouse",
 		"",
-		"Try: circle the orange planetoid · step",
-		"through the cyan portal · press F and fly",
-		"the spirit to the purple crystal, then E.",
+		"Around the arena:",
+		"· E   orange planetoid — walk around it",
+		"· N   green strip — walk up the wall",
+		"· W   cyan portals — look / step / shoot through",
+		"· SE  room — shoot the switch, fall to the ceiling",
+		"· S   sealed room — spirit to the purple crystal",
+		"· W   platforms — spirit reveals the bridge, slash the drone",
 	])
 	add_child(_controls)
 
@@ -45,11 +49,45 @@ func _ready() -> void:
 	_meter_fill.size = Vector2(0, 14)
 	add_child(_meter_fill)
 
+	_build_crosshair()
+	_build_death_overlay()
+
 	if player:
 		player.mode_changed.connect(_on_mode_changed)
 		player.spirit_time_changed.connect(_on_spirit_time)
+		player.died.connect(_on_died)
+		player.resurrected.connect(_on_resurrected)
 	_on_mode_changed(false)
 	_on_spirit_time(0.0)
+
+
+func _build_crosshair() -> void:
+	var center := get_viewport().get_visible_rect().size * 0.5
+	var dot := Label.new()
+	dot.text = "+"
+	dot.add_theme_color_override("font_color", Color(1, 1, 1, 0.75))
+	dot.add_theme_font_size_override("font_size", 22)
+	dot.position = center - Vector2(7, 16)
+	add_child(dot)
+
+
+func _build_death_overlay() -> void:
+	_death_bg = ColorRect.new()
+	_death_bg.color = Color(0.02, 0.0, 0.06, 0.6)
+	_death_bg.anchor_right = 1.0
+	_death_bg.anchor_bottom = 1.0
+	_death_bg.visible = false
+	add_child(_death_bg)
+
+	_death_text = Label.new()
+	_death_text.text = "The World of Emanation…\nreturning"
+	_death_text.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_death_text.add_theme_color_override("font_color", Color(0.7, 0.85, 1.0))
+	_death_text.add_theme_font_size_override("font_size", 28)
+	_death_text.position = get_viewport().get_visible_rect().size * 0.5 - Vector2(160, 40)
+	_death_text.size = Vector2(320, 80)
+	_death_text.visible = false
+	add_child(_death_text)
 
 
 func _make_label() -> Label:
@@ -73,3 +111,13 @@ func _on_spirit_time(fraction: float) -> void:
 	_meter_fill.size = Vector2(220.0 * clampf(fraction, 0.0, 1.0), 14)
 	_meter_bg.visible = fraction > 0.0
 	_meter_fill.visible = fraction > 0.0
+
+
+func _on_died() -> void:
+	_death_bg.visible = true
+	_death_text.visible = true
+
+
+func _on_resurrected() -> void:
+	_death_bg.visible = false
+	_death_text.visible = false

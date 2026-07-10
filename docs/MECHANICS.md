@@ -4,8 +4,11 @@ The whole game hangs on three verbs that are interesting alone and *combinatoria
 together: **portals**, **localized gravity**, and **Merkavah spirit projection**. This
 doc specifies each at an implementable level and — most importantly — how they compose.
 
-The [`prototype/`](../prototype/) implements a first pass of all three; per-mechanic
-implementation notes point at the relevant script.
+The [`prototype/`](../prototype/) now implements every behaviour described below —
+walk/look/shoot-through portals, gravity paths + switches + planetoids, and the full
+Merkavah verb set (free-fly, tether, spirit blade, spirit locks, spirit-revealed paths) —
+plus the supporting weapon and resurrection systems. Per-mechanic notes point at the
+relevant script.
 
 ---
 
@@ -37,9 +40,12 @@ exit_velocity  = (partner.basis * flip * entry.basis.inverse()) * traveler.veloc
 
 A short per-portal cooldown after a teleport prevents immediate re-triggering at the exit.
 
-**Prototype:** `scripts/portal.gd` — working teleport with remapped velocity, an emissive
-ring, a trigger volume, and a cooldown. (See-through rendering via `SubViewport` is noted
-as the next step; the prototype ships the reliable teleport first.)
+**Prototype:** `scripts/portal.gd` implements all three behaviours. **Walk through** —
+teleport with orientation & velocity remapped. **Shoot through** — the trigger catches
+projectiles (`scripts/projectile.gd`) and carries them to the partner; a bad angle really
+can send one back into you. **Look through** — a `SubViewport` + a virtual camera mirror
+the player's eye through the partner portal and render it onto the surface (via a screen-UV
+shader); sheets sit on a separate visual layer so the virtual cameras don't recurse.
 
 ---
 
@@ -66,8 +72,11 @@ Give the player a `current_up` vector instead of assuming world-up:
 - A gravity region sets the target up: a fixed vector (path/switch) or a computed one
   (`(pos - planet_center).normalized()` for radial).
 
-**Prototype:** `scripts/player.gd` implements re-orientable gravity;
-`scripts/gravity_planet.gd` is a radial planetoid you can circumnavigate.
+**Prototype:** all three forms. `scripts/player.gd` carries the re-orientable-gravity
+model. `scripts/gravity_planet.gd` is a radial planetoid you can circumnavigate (with its
+own weaker, moon-like field). `scripts/gravity_path.gd` is a lit walkway you ride straight
+up a wall to a ledge. `scripts/gravity_switch.gd` + `scripts/gravity_region.gd` are a
+shootable switch that flips a room's pull so you fall to what was the ceiling.
 
 ---
 
@@ -90,8 +99,12 @@ The canonical spirit play: leave the body somewhere safe, spirit-walk to solve a
 set up an ambush, return, and execute. It is the game's best generator of "leave/return"
 tension and of asymmetric combat setups.
 
-**Prototype:** `scripts/player.gd` handles the spirit state (free-fly camera, timer,
-return); `scripts/spirit_lock.gd` is a spirit-only lock that opens a sealed door.
+**Prototype:** `scripts/player.gd` handles the spirit state — free-fly camera, timer,
+floor clamp, and a **body tether** (you can't drift beyond a set range: the body really is
+a leash). It also carries the **spirit blade** (a short cone-slash that only harms
+spirit-vulnerable drones). `scripts/spirit_lock.gd` is a spirit-only lock that opens a
+sealed door; `scripts/spirit_reveal.gd` is a bridge invisible to the body until the spirit
+gets close, then it turns solid so the body can cross.
 
 ---
 
@@ -115,5 +128,10 @@ puzzle design; the best moments use all three.
   lines up when you approach along the surface — impossible to reach in straight-line,
   fixed-gravity space.
 
-**The prototype sandbox** stitches a minimal version of these together: a planetoid to
-circle, a portal to a ledge, and a spirit-gated door — enough to feel the verbs interlock.
+**The prototype sandbox** now exercises every verb in the triad across one arena: a
+planetoid to circle, a wall to walk up, a room whose gravity you flip by shooting a switch,
+a portal pair you can look/step/shoot through (with a drone to tag through it), a
+spirit-gated sealed room, and a spirit-revealed bridge guarded by a spirit-only drone. Two
+supporting systems back them up — a **weapon/projectile** (for shoot-through and the
+switch) and **resurrection** (fall out, or shoot yourself through a portal, and you return
+to your last spawn after a brief death-walk). Enough to feel all three verbs interlock.

@@ -20,6 +20,12 @@ const PITCH_LIMIT := 1.4           # radians (~80°)
 const SPIRIT_SPEED := 9.0
 const SPIRIT_DURATION := 8.0       # seconds before the spirit is pulled home
 const SPIRIT_FLOOR_Y := 0.4        # spirit slips through walls, but not through the floor
+const SPIRIT_TETHER := 24.0        # the body is a leash: the spirit can't drift further than this
+const BLADE_RANGE := 3.2           # spirit blade reach
+const DEATH_PLANE_Y := -12.0       # fall below this and you "die" (then resurrect)
+const RESURRECT_DELAY := 1.2       # seconds in the death-walk before returning
+
+const PROJECTILE := preload("res://scripts/projectile.gd")
 
 # ---- State ----------------------------------------------------------------
 var current_up := Vector3.UP
@@ -29,6 +35,8 @@ var body_pitch := 0.0
 var spirit_pitch := 0.0
 var in_spirit := false
 var spirit_time_left := 0.0
+var spawn_point := Vector3.ZERO     # set by world.gd after positioning; resurrection returns here
+var is_dead := false
 
 # ---- Nodes (built at runtime) --------------------------------------------
 var head: Node3D                    # yaw on the body, pitch on the head
@@ -36,9 +44,12 @@ var camera: Camera3D
 var body_mesh: MeshInstance3D
 var spirit_pivot: Node3D            # top-level: free-flies in world space
 var spirit_camera: Camera3D
+var spirit_blade: MeshInstance3D
 
 signal mode_changed(is_spirit: bool)
 signal spirit_time_changed(fraction: float)
+signal died()
+signal resurrected()
 
 
 func _ready() -> void:
@@ -98,20 +109,46 @@ func _build_spirit_rig() -> void:
 	wisp.mesh.material = smat
 	spirit_pivot.add_child(wisp)
 
+	# Spirit blade: a thin glowing edge in front of the eye, shown for a beat on a slash.
+	spirit_blade = MeshInstance3D.new()
+	var blade_mesh := BoxMesh.new()
+	blade_mesh.size = Vector3(0.06, 1.2, 0.5)
+	spirit_blade.mesh = blade_mesh
+	var blade_mat := StandardMaterial3D.new()
+	blade_mat.albedo_color = Color(0.7, 0.9, 1.0, 0.7)
+	blade_mat.emission_enabled = true
+	blade_mat.emission = Color(0.6, 0.85, 1.0)
+	blade_mat.emission_energy_multiplier = 2.0
+	blade_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	spirit_blade.mesh.material = blade_mat
+	spirit_blade.position = Vector3(0.4, -0.2, -0.9)
+	spirit_blade.rotation_degrees = Vector3(0, 0, 25)
+	spirit_blade.visible = false
+	spirit_camera.add_child(spirit_blade)
+
 	spirit_pivot.visible = false
+
+
+## The camera currently driving the screen — physical eye, or the spirit's.
+func get_active_camera() -> Camera3D:
+	return spirit_camera if in_spirit else camera
 
 
 # ---------------------------------------------------------------------------
 # Input
 # ---------------------------------------------------------------------------
 func _unhandled_input(event: InputEvent) -> void:
-	if event is InputEventMouseButton and event.pressed:
-		Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+	# Left click: recapture the mouse if free, otherwise fire.
+	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
+		if Input.mouse_mode != Input.MOUSE_MODE_CAPTURED:
+			Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+		elif not is_dead:
+			_fire()
 
 	if event.is_action_pressed("ui_cancel"):
 		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 
-	if event.is_action_pressed("spirit_toggle"):
+	if event.is_action_pressed("spirit_toggle") and not is_dead:
 		_toggle_spirit()
 
 	if event is InputEventMouseMotion and Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
@@ -130,6 +167,11 @@ func _unhandled_input(event: InputEvent) -> void:
 # Physics
 # ---------------------------------------------------------------------------
 func _physics_process(delta: float) -> void:
+	if is_dead:
+		return
+	if global_position.y < DEATH_PLANE_Y:
+		die()
+		return
 	if in_spirit:
 		_process_spirit(delta)
 		return
@@ -237,3 +279,79 @@ func _process_spirit(delta: float) -> void:
 		var p := spirit_pivot.global_position
 		p.y = SPIRIT_FLOOR_Y
 		spirit_pivot.global_position = p
+
+	# The body is a leash — the spirit can't drift beyond the tether.
+	var leash := spirit_pivot.global_position - global_position
+	if leash.length() > SPIRIT_TETHER:
+		spirit_pivot.global_position = global_position + leash.normalized() * SPIRIT_TETHER
+
+
+# ---------------------------------------------------------------------------
+# Weapons — the physical gun, and the spirit blade
+# ---------------------------------------------------------------------------
+func _fire() -> void:
+	if in_spirit:
+		_slash()
+	else:
+		_shoot()
+
+
+func _shoot() -> void:
+	var cam := camera
+	var forward := -cam.global_transform.basis.z
+	var muzzle := cam.global_position + forward * 1.2
+	var proj := PROJECTILE.new()
+	proj.shooter = self
+	get_parent().add_child(proj)         # lives in the world, not parented to the player
+	proj.launch(muzzle, forward)
+
+
+func _slash() -> void:
+	spirit_blade.visible = true
+	var origin := spirit_pivot.global_position
+	var forward := -spirit_camera.global_transform.basis.z
+	for target in get_tree().get_nodes_in_group("spirit_targets"):
+		if not is_instance_valid(target):
+			continue
+		var to_target: Vector3 = target.global_position - origin
+		if to_target.length() <= BLADE_RANGE and forward.dot(to_target.normalized()) > 0.3:
+			if target.has_method("take_hit"):
+				target.take_hit(1, "spirit")
+	await get_tree().create_timer(0.15).timeout
+	if is_instance_valid(spirit_blade):
+		spirit_blade.visible = false
+
+
+# ---------------------------------------------------------------------------
+# Death & resurrection — dying is a beat, not a wall
+# ---------------------------------------------------------------------------
+## Shot yourself through a portal. Same consequence as any death: you come back.
+func hit_self() -> void:
+	die()
+
+
+func die() -> void:
+	if is_dead:
+		return
+	is_dead = true
+	if in_spirit:
+		_exit_spirit()
+	velocity = Vector3.ZERO
+	died.emit()
+	_resurrect()
+
+
+func _resurrect() -> void:
+	await get_tree().create_timer(RESURRECT_DELAY).timeout
+	# Return to the body at the last safe spawn, upright and whole.
+	current_up = Vector3.UP
+	target_up = Vector3.UP
+	gravity_strength = GRAVITY
+	transform.basis = Basis()
+	body_pitch = 0.0
+	head.rotation.x = 0.0
+	velocity = Vector3.ZERO
+	global_position = spawn_point
+	up_direction = current_up
+	is_dead = false
+	resurrected.emit()

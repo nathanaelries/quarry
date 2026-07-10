@@ -9,7 +9,12 @@ extends Node3D
 const PlayerScript := preload("res://scripts/player.gd")
 const PortalScript := preload("res://scripts/portal.gd")
 const PlanetScript := preload("res://scripts/gravity_planet.gd")
+const GravityPathScript := preload("res://scripts/gravity_path.gd")
+const GravityRegionScript := preload("res://scripts/gravity_region.gd")
+const GravitySwitchScript := preload("res://scripts/gravity_switch.gd")
 const SpiritLockScript := preload("res://scripts/spirit_lock.gd")
+const SpiritRevealScript := preload("res://scripts/spirit_reveal.gd")
+const DroneScript := preload("res://scripts/drone.gd")
 const HudScript := preload("res://scripts/hud.gd")
 
 const CYAN := Color(0.35, 0.85, 1.0)
@@ -27,10 +32,14 @@ func _ready() -> void:
 	var player: CharacterBody3D = PlayerScript.new()
 	add_child(player)
 	player.global_position = Vector3(0, 2, 8)
+	player.spawn_point = Vector3(0, 2, 8)
 
 	_build_gravity_demo(player)
+	_build_gravity_path_demo(player)
+	_build_gravity_switch_demo(player)
 	_build_portal_demo(player)
 	_build_spirit_demo(player)
+	_build_spirit_reveal_demo(player)
 
 	var hud: CanvasLayer = HudScript.new()
 	hud.player = player
@@ -107,6 +116,45 @@ func _build_gravity_demo(player: CharacterBody3D) -> void:
 	planet.global_position = Vector3(12, 3.2, 2)
 
 
+# Gravity path — walk straight up a wall to a high ledge (north, +Z).
+func _build_gravity_path_demo(player: CharacterBody3D) -> void:
+	_add_box(Vector3(0, 5, 20), Vector3(6, 10, 1), Color(0.16, 0.17, 0.22))          # the wall
+	_add_box(Vector3(0, 10.1, 17.8), Vector3(6, 0.5, 5), Color(0.18, 0.22, 0.2))     # top ledge
+	var beacon := _add_box(Vector3(0, 10.9, 17.0), Vector3(0.5, 0.5, 0.5), GREEN, true, 1.6)
+	beacon.name = "PathBeacon"
+
+	var path: Node3D = GravityPathScript.new()
+	path.player = player
+	path.path_up = Vector3(0, 0, -1)                                                 # wall's outward normal
+	add_child(path)
+	path.global_position = Vector3(0, 5, 19.4)
+
+
+# Gravity switch — shoot the switch to flip a room's gravity and reach the ceiling.
+func _build_gravity_switch_demo(player: CharacterBody3D) -> void:
+	var c := Vector3(16, 0, -6)
+	_add_box(c + Vector3(0, 6.2, 0), Vector3(8, 0.4, 8), Color(0.15, 0.15, 0.2))     # ceiling
+	_add_box(c + Vector3(0, 3, -3.8), Vector3(8, 6, 0.4), Color(0.16, 0.16, 0.21))   # back wall
+	_add_box(c + Vector3(-3.8, 3, 0), Vector3(0.4, 6, 7), Color(0.16, 0.16, 0.21))   # left wall
+	_add_box(c + Vector3(3.8, 3, 0), Vector3(0.4, 6, 7), Color(0.16, 0.16, 0.21))    # right wall
+	# front is open — walk in from the arena
+
+	var region: Node3D = GravityRegionScript.new()
+	region.player = player
+	region.region_size = Vector3(7.4, 6.0, 7.4)
+	add_child(region)
+	region.global_position = c + Vector3(0, 3, 0)
+
+	var sw: Node3D = GravitySwitchScript.new()
+	sw.region = region
+	add_child(sw)
+	sw.global_position = c + Vector3(0, 2.0, -3.5)                                   # on the back wall
+
+	# The prize sits on the ceiling — only reachable once you've flipped gravity.
+	var goal := _add_box(c + Vector3(0, 5.6, 0), Vector3(0.6, 0.6, 0.6), Color(1.0, 0.85, 0.2), true, 1.8)
+	goal.name = "CeilingGoal"
+
+
 # ---------------------------------------------------------------------------
 # Mechanic 2 — portals (reach an otherwise-unreachable ledge)
 # ---------------------------------------------------------------------------
@@ -129,6 +177,19 @@ func _build_portal_demo(player: CharacterBody3D) -> void:
 
 	portal_a.linked = portal_b
 	portal_b.linked = portal_a
+
+	# A drone floating just off portal B's exit — look through portal A to see it,
+	# then shoot straight through to tag it (or teleport up and shoot it directly).
+	_spawn_drone(Vector3(-13, 8.6, -7), "physical")
+
+
+## Spawn a drone target. `vuln` = "physical" | "spirit" | "both".
+func _spawn_drone(pos: Vector3, vuln: String) -> Node3D:
+	var drone: Node3D = DroneScript.new()
+	drone.vulnerable_to = vuln
+	add_child(drone)
+	drone.global_position = pos
+	return drone
 
 
 # ---------------------------------------------------------------------------
@@ -156,6 +217,29 @@ func _build_spirit_demo(player: CharacterBody3D) -> void:
 	lock.door = door
 	add_child(lock)
 	lock.global_position = c + Vector3(0, 1.4, 0)
+
+
+# Spirit-revealed path — scout in spirit to reveal a bridge, cross in the flesh,
+# slash the spirit-only drone guarding the goal.
+func _build_spirit_reveal_demo(player: CharacterBody3D) -> void:
+	# A ramp up to the near platform. NOTE: if it tilts the wrong way in-editor,
+	# flip the sign of the rotation below.
+	var ramp := _add_box(Vector3(-8, 1.0, 6), Vector3(4.6, 0.4, 3), Color(0.2, 0.2, 0.26))
+	ramp.rotation_degrees = Vector3(0, 0, -24)
+
+	_add_box(Vector3(-12, 1.75, 6), Vector3(4, 0.5, 4), Color(0.18, 0.18, 0.24))   # near platform
+	_add_box(Vector3(-19, 1.75, 6), Vector3(4, 0.5, 4), Color(0.18, 0.18, 0.24))   # far platform (over a 3-unit gap)
+
+	var bridge: Node3D = SpiritRevealScript.new()
+	bridge.player = player
+	add_child(bridge)
+	bridge.global_position = Vector3(-15.5, 1.8, 6)
+
+	var goal := _add_box(Vector3(-19, 2.6, 5.0), Vector3(0.5, 0.5, 0.5), Color(0.6, 0.4, 0.95), true, 1.8)
+	goal.name = "RevealGoal"
+
+	# A spirit-only drone guarding the goal — the physical gun can't touch it.
+	_spawn_drone(Vector3(-19, 2.7, 6.8), "spirit")
 
 
 # ---------------------------------------------------------------------------
