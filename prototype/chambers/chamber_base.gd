@@ -13,6 +13,7 @@ const PlayerScript := preload("res://scripts/player.gd")
 const HudScript := preload("res://scripts/hud.gd")
 const DroneScript := preload("res://scripts/drone.gd")
 const LootContainerScript := preload("res://scripts/loot_container.gd")
+const PostFxScript := preload("res://scripts/postfx.gd")
 
 const FLOOR := Color(0.14, 0.14, 0.18)
 const WALL := Color(0.11, 0.11, 0.15)
@@ -46,6 +47,8 @@ func _ready() -> void:
 	_hud.player = player
 	add_child(_hud)
 	_hud.set_objective(intro_objective())
+
+	add_child(PostFxScript.new())        # 1960s-poster render pipeline (toggle P)
 
 
 # ---- Override points ------------------------------------------------------
@@ -216,22 +219,30 @@ func _build_navigation() -> void:
 func _build_environment() -> void:
 	var env := Environment.new()
 	env.background_mode = Environment.BG_COLOR
-	env.background_color = Color(0.03, 0.03, 0.06)
+	env.background_color = Color("0A0A0F")                 # deep space black
 	env.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
-	env.ambient_light_color = Color(0.45, 0.42, 0.5)
-	env.ambient_light_energy = 0.45
-	env.fog_enabled = true
-	env.fog_light_color = Color(0.06, 0.04, 0.08)
-	env.fog_density = 0.012
+	env.ambient_light_color = Color(0.3, 0.34, 0.5)
+	env.ambient_light_energy = 0.5
+	# Glow for the "sacred tech" emissives.
+	env.glow_enabled = true
+	env.glow_intensity = 0.9
+	env.glow_strength = 1.1
+	env.glow_bloom = 0.15
+	env.glow_hdr_threshold = 0.85
+	env.glow_blend_mode = Environment.GLOW_BLEND_MODE_ADDITIVE
+	# Bold, saturated, punchy — the built-in half of the poster look.
+	env.adjustment_enabled = true
+	env.adjustment_saturation = 1.35
+	env.adjustment_contrast = 1.15
 
 	var we := WorldEnvironment.new()
 	we.environment = env
 	add_child(we)
 
 	var sun := DirectionalLight3D.new()
-	sun.rotation_degrees = Vector3(-55, -50, 0)
-	sun.light_energy = 1.0
-	sun.light_color = Color(1.0, 0.93, 0.82)
+	sun.rotation_degrees = Vector3(-52, -46, 0)
+	sun.light_energy = 1.4                                 # dramatic key
+	sun.light_color = Color(1.0, 0.9, 0.74)
 	sun.shadow_enabled = true
 	add_child(sun)
 
@@ -248,6 +259,7 @@ func _setup_input() -> void:
 		"spirit_toggle": KEY_F,
 		"interact": KEY_E,
 		"camera_toggle": KEY_V,     # first-person ⇄ over-the-shoulder
+		"fx_toggle": KEY_P,         # poster render pipeline on/off (A/B)
 	}
 	for action in binds:
 		if not InputMap.has_action(action):
